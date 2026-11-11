@@ -47,83 +47,46 @@
 
 ---
 
-## 🚀 快速上手 (CLI 命令行)
+## 🤖 安装与使用方式
 
-EnglishCraft 全部脚本仅依赖 Python 3 标准库，**无需 `pip install` 任何沉重依赖**。
+本项目专为 AI Agent（Antigravity、Claude Code、Cursor 等）设计，用户**无需手动敲击复杂的命令行**，安装技能后，直接在聊天框中使用自然语言下达指令，Agent 会自动调用对应工具完成流水线作业。
 
-### 1. 克隆项目
+### 1. 安装 Skill
+
+在你的 AI 客户端或工作区中安装本技能：
 ```bash
-git clone https://github.com/acoldfox/english-craft.git
-cd english-craft
+npx skills add https://github.com/acoldfox/english-craft -y
 ```
-
-### 2. 检索并下载外刊
-```bash
-# 查看最新期数
-python3 scripts/fetch_magazine.py list -m economist --limit 5
-
-# 下载最新一期《经济学人》EPUB
-python3 scripts/fetch_magazine.py download -m economist -i latest -o ./downloads/economist
-```
-
-### 3. 搜索并下载经典原著
-```bash
-# 搜索原版图书
-python3 scripts/fetch_book.py search "The Great Gatsby"
-
-# 下载 EPUB 到本地
-python3 scripts/fetch_book.py download "The Great Gatsby" -o ./downloads/books
-
-# 按古登堡编号直接下载（例如 #1661 福尔摩斯探案集）
-python3 scripts/fetch_book.py download 1661 -o ./downloads/books
-```
-
-### 4. 散篇装订成一本 EPUB
-```bash
-# 将文章目录内的所有 Markdown 合成为一本带目录的电子书
-python3 scripts/binder.py ./my_articles/ --title "Weekly Reading Digest" -o ./downloads/digest.epub
-```
-
-### 5. 提取文章高频重点词汇
-```bash
-# 分析词频并提取前 30 个核心生词（附带原句摘录）
-python3 scripts/vocab.py ./downloads/digest.epub --top 30
-
-# 导出为 Anki / CSV 格式
-python3 scripts/vocab.py ./downloads/digest.epub --top 50 --format csv -o ./downloads/vocab.csv
-```
-
-### 6. 生成 A4 打印精读排版
-```bash
-# 生成带右侧生词边栏与打卡清单的打印文件
-python3 scripts/print_layout.py ./article.md --title "Artificial Intelligence" -o ./downloads/sheet.html
-# 用任意浏览器打开 sheet.html 并按 Cmd+P 打印或存为 PDF
-```
-
-### 7. 导出至词塔 (可选)
-```bash
-export WORDTOWER_API_KEY=wtk_your_token
-
-# 导出图书 EPUB
-python3 scripts/exporters/wordtower.py epub ./downloads/books/book.epub --title "My Book"
-
-# 导出 YouTube 课程与字幕
-python3 scripts/exporters/wordtower.py youtube "<YouTube-URL>" --subtitles ./sub.srt --title "Speech"
-```
+*(或将本仓库克隆至你的 Agent 技能目录，如 `.agents/skills/english-craft`)*
 
 ---
 
-## 🤖 在 AI Agent (Antigravity / Claude / Cursor) 中使用
+### 2. 💬 常用自然语言指令示例
 
-本项目已按照开放标准封装为标准 **Agent Skill**。
+安装完成后，你只需像与助教沟通一样对 AI 提出需求：
 
-### 自然语言指令示例
-安装本 Skill 后，只需在对话框中用自然语言交流：
-- *“帮我查一下这周最新的《经济学人》，并下载 EPUB。”*
-- *“在 Standard Ebooks 上找一本《傲慢与偏见》，提取前 30 个生词导出成表格。”*
-- *“把我这周收集的 3 篇外媒文章装订成一本电子书，名字叫《本周科技精选》。”*
-- *“把这篇文章排版成适合 A4 打印的纸质精读版，右边要留出记笔记的空白横线。”*
-- *“把刚刚下载的《了不起的盖茨比》导入词塔，做成双语伴读课程。”*
+#### 📖 1. 查找与下载英文语料
+- *“帮我查一下这周最新一期的《经济学人》，并下载 EPUB。”*
+- *“在 Standard Ebooks 上找一本排版精美的《了不起的盖茨比》。”*
+- *“在古登堡计划搜一下《福尔摩斯探案集》（或直接下载 #1661）。”*
+- *“帮我下载这个 YouTube 英文演讲和带时间戳的字幕：https://youtube.com/watch?v=xxx”*
+
+#### 📚 2. 散装好文装订成册 (EPUB)
+- *“把我这周收集在 `articles/` 文件夹里的 3 篇外媒文章装订成一本 EPUB 电子书，书名叫《本周精选》。”*
+- *“把这篇长文网页提取正文，并做成可以在 Kindle 上看的电子书。”*
+
+#### 📊 3. 词频分析与生词提炼
+- *“分析一下刚下载的这篇《经济学人》文章，提取前 30 个核心重点词汇并附带原句摘录。”*
+- *“帮我把这本小说的生词表导出为 Anki / CSV 格式，方便我复习。”*
+
+#### 🖨️ 4. A4 打印与页边手写批注排版
+- *“把这篇文章排版成适合 A4 打印的精读版，右侧边栏帮我留出对应段落的生词和手写笔记横线。”*
+- *“生成打印排版，文末要带打卡复习勾选框清单。”*
+
+#### 🗼 5. 导入词塔交互伴读 (可选)
+- *“把刚才下载好的图书导入词塔生成双语精读课程。”*
+- *“把这个 YouTube 演讲视频导入词塔，做成保留原声时间轴的点读课。”*
+  *(注：若需导入词塔，可在对话框中直接将你的 `WORDTOWER_API_KEY` 发给 AI，或配置环境变量)*
 
 ---
 
