@@ -9,7 +9,7 @@
 
 ## ✨ 核心特性
 
-- 🎬 **YouTube 视频与时间戳字幕原生导入（官方 v0.7.0 对齐）**：原生支持词塔 v0.7.0 视频课程规范！一键提取 YouTube 视频字幕（SRT/VTT/JSON），导入词塔后**完美保留原视频播放器与逐句时间轴跳转**，实现点句跟读与原声伴读。
+- 🎬 **YouTube 视频与时间戳字幕原生导入**：原生支持词塔视频课程规范！一键提取 YouTube 视频字幕（SRT/VTT/JSON），导入词塔后**完美保留原视频播放器与逐句时间轴跳转**，实现点句跟读与原声伴读。
 - 📰 **外刊精读一键导入**：内置《经济学人》（The Economist）、《纽约客》（The New Yorker）、《大西洋月刊》（The Atlantic）、《连线》（WIRED）等优质外刊获取引擎，自动下载 EPUB 原版并导入词塔。
 - 🌐 **外媒博文网页转录**：任意英文网页/博客一键去噪，剥离广告提取纯净正文导入词塔。
 - 🧹 **智能排版与双语对照**：自动化段落规整、去噪清洗，支持生成地道参考译文与术语对齐。
@@ -61,7 +61,7 @@ npx skills add acoldfox/wordtower-importer -y
 
 导入词塔课程需要配置 `WORDTOWER_API_KEY`（词塔官方 v0.7.0 凭证）：
 
-1. 前往词塔官方平台（[WordTower](https://wordtower.app)），进入 **「账户 → Skill 与 Token」**。
+1. 前往词塔官方平台（[WordTower](https://www.wordtower.cn)），进入 **「账户 → Skill 与 Token」**。
 2. 创建一个 Token（前缀为 `wtk-`），确保勾选导入权限（`imports:text` 与 `imports:epub`）。
 3. 在终端设置环境变量：
    ```bash
