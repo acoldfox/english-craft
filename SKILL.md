@@ -135,11 +135,11 @@ python3 scripts/exporters/wordtower.py youtube "<YouTube-URL>" --subtitles <字�
 
 ---
 
-## 🙏 致谢与数据来源
+## 🙏 致谢与参考来源
 
-本项目尊重并鸣谢以下优秀的开源项目与公共数字图书馆：
-- 外刊语料：[hehonghui/awesome-english-ebooks](https://github.com/hehonghui/awesome-english-ebooks)
-- 公版名著：[Standard Ebooks](https://standardebooks.org/) 与 [Project Gutenberg](https://www.gutenberg.org/)（以及 [Gutendex](https://gutendex.com/)）
+本项目在开发中参考并使用了以下开源项目与公开数据源，特此感谢：
+- 外刊期刊：[hehonghui/awesome-english-ebooks](https://github.com/hehonghui/awesome-english-ebooks)
+- 公版名著：[Standard Ebooks](https://standardebooks.org/) 与 [Project Gutenberg](https://www.gutenberg.org/)（含 [Gutendex](https://gutendex.com/) 检索支持）
 - 伴读平台：[词塔 (WordTower)](https://www.wordtower.cn)
 - 转录工具：[baoyu-skills](https://github.com/jimliu/baoyu-skills)
 
