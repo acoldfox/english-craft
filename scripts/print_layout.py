@@ -12,7 +12,7 @@ import sys
 import re
 import html
 import argparse
-from vocab import load_text, analyze_vocabulary, clean_html, split_sentences
+from vocab import load_text, analyze_vocabulary, clean_html, split_sentences, simple_lemmatize, get_system_dict
 
 A4_PRINT_CSS = """
 @charset "utf-8";
@@ -213,7 +213,7 @@ body {
 }
 """
 
-def generate_print_html(input_file, title=None, top_vocab=40):
+def generate_print_html(input_file, title=None, top_vocab=40, max_paragraphs=60):
     raw_text = load_text(input_file)
     clean_text = clean_html(raw_text) if "<" in raw_text and ">" in raw_text else raw_text
     
@@ -226,25 +226,33 @@ def generate_print_html(input_file, title=None, top_vocab=40):
         else:
             doc_title = os.path.splitext(os.path.basename(input_file))[0].replace("-", " ").replace("_", " ").title()
 
-    # Vocab stats
-    stats = analyze_vocabulary(clean_text, top_n=top_vocab, min_freq=1)
-    target_vocab_map = {item["word"].lower(): item for item in stats["vocabulary"]}
-
     # Break into paragraphs
     raw_paragraphs = [p.strip() for p in clean_text.split("\n\n") if len(p.strip()) > 30]
     if len(raw_paragraphs) < 3:
         raw_paragraphs = [p.strip() for p in clean_text.split("\n") if len(p.strip()) > 30]
+    if max_paragraphs and max_paragraphs > 0:
+        raw_paragraphs = raw_paragraphs[:max_paragraphs]
+
+    # Vocab stats on the selected paragraphs
+    selected_text = "\n\n".join(raw_paragraphs)
+    stats = analyze_vocabulary(selected_text, top_n=top_vocab, min_freq=1, min_length=4)
+    target_vocab_map = {item["word"].lower(): item for item in stats["vocabulary"]}
+    sys_dict = get_system_dict()
 
     rows_html = []
     seen_words = set()
 
     for p in raw_paragraphs:
-        words_in_p = {w.lower() for w in re.findall(r"\b[A-Za-z]+\b", p)}
+        tokens_in_p = re.findall(r"\b[A-Za-z]{4,}\b", p)
         matched_vocab = []
-        for w in words_in_p:
-            if w in target_vocab_map and w not in seen_words:
-                matched_vocab.append(target_vocab_map[w])
-                seen_words.add(w)
+        matched_tokens_in_p = set()
+        for tok in tokens_in_p:
+            lemma = simple_lemmatize(tok.lower(), sys_dict)
+            if lemma in target_vocab_map and lemma not in seen_words:
+                matched_vocab.append(target_vocab_map[lemma])
+                seen_words.add(lemma)
+            if lemma in target_vocab_map:
+                matched_tokens_in_p.add(tok)
 
         # Margin content
         margin_items = []
@@ -258,6 +266,14 @@ def generate_print_html(input_file, title=None, top_vocab=40):
             margin_items.append('<div class="margin-note-line"></div><div class="margin-note-line"></div>')
 
         p_escaped = html.escape(p)
+        for tok in sorted(matched_tokens_in_p, key=len, reverse=True):
+            tok_esc = html.escape(tok)
+            p_escaped = re.sub(
+                rf"\b({re.escape(tok_esc)})\b",
+                r'<u style="text-decoration-color:#94a3b8;text-underline-offset:2pt;">\1</u>',
+                p_escaped,
+            )
+
         rows_html.append(f"""
         <div class="reading-row">
             <div class="text-col">
@@ -325,6 +341,7 @@ def main():
     parser.add_argument("input", help="Path to English EPUB, Markdown, TXT, or SRT file")
     parser.add_argument("--title", "-t", help="Custom document title")
     parser.add_argument("--top-vocab", "-n", type=int, default=40, help="Number of target vocabulary items to track (default: 40)")
+    parser.add_argument("--max-paragraphs", "-p", type=int, default=60, help="Max paragraphs to render (default: 60, 0 for all)")
     parser.add_argument("--output", "-o", default="./downloads/reading_sheet.html", help="Output HTML file path (default: ./downloads/reading_sheet.html)")
 
     args = parser.parse_args()
@@ -334,7 +351,7 @@ def main():
         sys.exit(1)
 
     print(f"🖨️  Generating A4 print-ready reading layout for: '{args.input}' ...")
-    html_content = generate_print_html(args.input, title=args.title, top_vocab=args.top_vocab)
+    html_content = generate_print_html(args.input, title=args.title, top_vocab=args.top_vocab, max_paragraphs=args.max_paragraphs)
 
     os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)
     with open(args.output, "w", encoding="utf-8") as f:

@@ -57,61 +57,64 @@ metadata:
 
 ## 📚 第二步：功能模块与脚本调用
 
-### 1. 权威外刊下载 (`scripts/fetch_magazine.py`)
+> **路径约定**：下方命令中的 `{baseDir}` 代表本 `SKILL.md` 所在的目录（例如 `.agents/skills/english-craft`）。执行脚本时请替换为实际路径。
+
+### 1. 权威外刊下载 (`{baseDir}/scripts/fetch_magazine.py`)
 无需任何外部依赖，自动代理穿透与镜像兜底：
 ```bash
 # 查看外刊最新期数
-python3 scripts/fetch_magazine.py list [-m economist|new_yorker|atlantic|wired] [--limit 5]
+python3 {baseDir}/scripts/fetch_magazine.py list [-m economist|new_yorker|atlantic|wired] [--limit 5]
 
 # 下载最新一期或指定日期 EPUB
-python3 scripts/fetch_magazine.py download -m economist -i latest -o ./downloads/economist
+python3 {baseDir}/scripts/fetch_magazine.py download -m economist -i latest -o ./downloads/economist
 ```
 
-### 2. 英文公版名著图书 (`scripts/fetch_book.py`)
+### 2. 英文公版名著图书 (`{baseDir}/scripts/fetch_book.py`)
 优先检索 Standard Ebooks 极客精排源，自动 fallback 至古登堡计划：
 ```bash
 # 搜索原版书
-python3 scripts/fetch_book.py search "The Great Gatsby" [--limit 5]
+python3 {baseDir}/scripts/fetch_book.py search "The Great Gatsby" [--limit 5]
 
 # 下载 EPUB（支持书名、古登堡数字 ID 或图书网页 URL）
-python3 scripts/fetch_book.py download "The Great Gatsby" -o ./downloads/books
-python3 scripts/fetch_book.py download 1661 -o ./downloads/books
+python3 {baseDir}/scripts/fetch_book.py download "The Great Gatsby" -o ./downloads/books
+python3 {baseDir}/scripts/fetch_book.py download 1661 -o ./downloads/books
 ```
 
-### 3. 散装文章装订成册 (`scripts/binder.py`)
+### 3. 散装文章装订成册 (`{baseDir}/scripts/binder.py`)
 将多篇散落的英文 Markdown 或纯文本文件，装订合成一本标准的 EPUB 3 电子书：
 ```bash
-python3 scripts/binder.py ./articles/ --title "Weekly Tech & Life Digest" -o ./downloads/digest.epub
+python3 {baseDir}/scripts/binder.py ./articles/ --title "Weekly Tech & Life Digest" -o ./downloads/digest.epub
 ```
 
-### 4. 英文词频与核心词汇提取 (`scripts/vocab.py`)
-自动对文章或整本 EPUB 提取重点词汇，支持词形还原并过滤初中常见虚词：
+### 4. 英文词频与核心词汇提取 (`{baseDir}/scripts/vocab.py`)
+自动对文章、字幕或整本 EPUB 提取重点学习词汇，内置词典词形还原并自动过滤专有名词与 A1/A2 基础虚词：
 ```bash
 # 提取前 30 个高频重点词汇及上下文例句
-python3 scripts/vocab.py <path-to-epub-or-md> --top 30
+python3 {baseDir}/scripts/vocab.py <path-to-epub-or-md-or-srt> --top 30
 
 # 导出为 CSV / Anki 词卡或 Markdown 词表
-python3 scripts/vocab.py <path> --top 50 --format csv -o ./downloads/vocab.csv
-python3 scripts/vocab.py <path> --top 50 --format markdown -o ./downloads/vocab.md
+python3 {baseDir}/scripts/vocab.py <path> --top 50 --format csv -o ./downloads/vocab.csv
+python3 {baseDir}/scripts/vocab.py <path> --top 50 --format markdown -o ./downloads/vocab.md
 ```
 
-### 5. A4 打印与页边注记排版 (`scripts/print_layout.py`)
-生成带右侧生词边栏、手写留白横线与文末词汇复习清单的 A4 打印排版 HTML（支持在浏览器中 `Cmd+P` 另存为 PDF 或直接打印）：
+### 5. A4 打印与页边注记排版 (`{baseDir}/scripts/print_layout.py`)
+生成带右侧生词边栏、文中词汇下划线标注、手写留白横线与文末词汇复习清单的 A4 打印排版 HTML（支持在浏览器中 `Cmd+P` 另存为 PDF 或直接打印）：
 ```bash
-python3 scripts/print_layout.py <path-to-md-or-epub> --title "Article Title" -o ./downloads/reading_sheet.html
+python3 {baseDir}/scripts/print_layout.py <path-to-md-or-epub> --title "Article Title" [--max-paragraphs 60] -o ./downloads/reading_sheet.html
 ```
 
-### 6. 导出到词塔 (`scripts/exporters/wordtower.py`)
-将采集或装订好的语料一键推送到词塔平台：
+### 6. 导出到词塔 (`{baseDir}/scripts/exporters/wordtower.py`)
+完整实现词塔官方 v0.7.0 的 `Preview ➔ Submit (UUID 幂等键) ➔ Poll Status` 三步闭环（若用户仅要求预览，可附加 `--preview-only`）：
 ```bash
-# 导出 EPUB
-python3 scripts/exporters/wordtower.py epub <path-to-epub> --title "<课程名>"
+# 导出 EPUB（若用户仅需特定章节，先调用 wordtower/scripts/epub_select.py inspect & build 裁剪后再导出）
+python3 {baseDir}/scripts/exporters/wordtower.py epub <path-to-epub> --title "<课程名>"
 
 # 导出 Markdown/文本
-python3 scripts/exporters/wordtower.py text <path-to-md> --title "<课程名>"
+python3 {baseDir}/scripts/exporters/wordtower.py text <path-to-md> --title "<课程名>"
 
-# 导出带时间戳字幕的 YouTube 视频课程
-python3 scripts/exporters/wordtower.py youtube "<YouTube-URL>" --subtitles <字幕.srt路径> --title "<课程名>"
+# 导出带时间戳字幕的 YouTube 视频课程（先用 baoyu-youtube-transcript 提取 .srt，再一键建课）
+npx -y bun .agents/skills/baoyu-youtube-transcript/scripts/main.ts "<YouTube-URL>" --format srt --languages en -o ./downloads/subtitles/video.srt
+python3 {baseDir}/scripts/exporters/wordtower.py youtube "<YouTube-URL>" --subtitles ./downloads/subtitles/video.srt --title "<课程名>"
 ```
 
 ---
