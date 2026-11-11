@@ -9,9 +9,9 @@
 
 ## ✨ 核心特性
 
-- 📰 **内置外刊极速下载**：内置《经济学人》（The Economist）、《纽约客》（The New Yorker）、《大西洋月刊》（The Atlantic）、《连线》（WIRED）下载引擎，支持 EPUB、MOBI、PDF，自适应代理与国内加速镜像。
-- 🎬 **YouTube 视频字幕提取**：无缝调度社区成熟方案，提取视频带时间戳字幕与目录结构。
-- 🌐 **外媒博文网页转录**：任意英文网页/博客一键去噪，剥离广告提取纯净 Markdown 正文。
+- 📰 **外刊精读一键导入**：内置《经济学人》（The Economist）、《纽约客》（The New Yorker）、《大西洋月刊》（The Atlantic）、《连线》（WIRED）等刊物获取引擎，自动下载优质 EPUB 原版并导入词塔。
+- 🎬 **YouTube 视频字幕提取**：无缝调度社区成熟方案，提取视频带时间戳字幕并转为精读课程。
+- 🌐 **外媒博文网页转录**：任意英文网页/博客一键去噪，剥离广告提取纯净正文导入词塔。
 - 🧹 **智能排版与双语对照**：自动化段落规整、去噪清洗，支持生成地道参考译文与术语对齐。
 - 🚀 **词塔（WordTower）全自动建课**：一键上传生成词塔精读课程，提取核心生词，无缝开启 AI 伴读。
 - 🧭 **保姆级向导机制**：智能检测环境，引导用户配置 `WORDS_API_KEY`，支持全自动补齐外部依赖。
@@ -34,37 +34,25 @@ npx skills add acoldfox/wordtower-importer -y
 
 ## 💡 使用方法
 
-安装完成后，在支持 Agent Skills 的 AI 对话框中，直接使用自然语言即可：
+安装完成后，在 AI 对话框中**直接使用自然语言**提出需求，Agent 即可全自动处理：
 
-- **导入外刊**：
-  > “帮我把最新一期的《经济学人》导入词塔学习。”  
-  > “把这期经济学人的 Leaders 章节导入词塔。”
+### 1. 外刊杂志精读
+- **查看期数**：
+  > “查看《经济学人》最近期数”  
+  > “查看《纽约客》最近期数”
+- **下载并导入最新期**：
+  > “帮我把最新一期《经济学人》导入词塔学习”  
+  > “下载最新一期《纽约客》EPUB 并导入词塔”
+- **指定章节导入**：
+  > “把这期《经济学人》的 Leaders 章节导入词塔”
 
-- **导入 YouTube 视频**：
-  > “帮我把这个视频做成词塔精读课程：`https://youtube.com/watch?v=xxxx`”
+### 2. YouTube 视频字幕学习
+- **视频转精读课程**：
+  > “帮我把这个 YouTube 英语演讲做成词塔精读课程：`https://youtube.com/watch?v=xxxx`”
 
-- **导入外媒博文**：
-  > “把这篇 TechCrunch 文章导入词塔：`https://techcrunch.com/xxxx`”
-
----
-
-## 🛠️ 本地脚本命令行调用 (CLI)
-
-如果你想脱离 Agent 直接在终端中使用内置的外刊下载脚本：
-
-```bash
-# 查看《经济学人》最近期数
-python3 scripts/fetch_magazine.py list --limit 5
-
-# 下载最新一期《经济学人》EPUB
-python3 scripts/fetch_magazine.py download -i latest -f epub -o ./downloads/economist
-
-# 查看《纽约客》最近期数
-python3 scripts/fetch_magazine.py list -m new_yorker --limit 5
-
-# 下载最新一期《纽约客》EPUB
-python3 scripts/fetch_magazine.py download -m new_yorker -i latest -f epub
-```
+### 3. 外媒网页文章精读
+- **网页文章转录**：
+  > “把这篇 TechCrunch 科技报道导入词塔：`https://techcrunch.com/xxxx`”
 
 ---
 

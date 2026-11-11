@@ -1,32 +1,32 @@
 ---
 name: wordtower-importer
-description: 词塔（WordTower）专属语料导入助手。一站式获取《经济学人》（The Economist）等英文原版杂志（内置）、YouTube 视频字幕、外媒文章，进行格式清洗、双语对照与难度评估，并全自动导入词塔（WordTower）生成双语精读课程。内置依赖自动安装与 WORDS_API_KEY 引导配置向导。
+description: 词塔（WordTower）专属语料导入助手。一站式获取《经济学人》（The Economist）等英文原版杂志（内置 EPUB）、YouTube 视频字幕、外媒文章，进行格式清洗、双语对照与难度评估，并全自动导入词塔（WordTower）生成双语精读课程。内置依赖自动安装与 WORDS_API_KEY 引导配置向导。
 metadata:
-  version: "1.0.0"
+  version: "1.0.1"
   homepage: "https://github.com/acoldfox/wordtower-importer"
 ---
 
 # 词塔语料导入助手 (WordTower Importer)
 
-本 Skill 是专为 [词塔（WordTower）](https://wordtower.app) 打造的**多渠道外语语料导入总控中枢**。它集成了外刊下载（经济学人等）、视频字幕提取、网页去噪转录，并打通了词塔的自动建课、生词生成与精读伴读流水线。
+本 Skill 是专为 [词塔（WordTower）](https://wordtower.app) 打造的**多渠道外语语料导入总控中枢**。它集成了外刊 EPUB 获取（经济学人等）、视频字幕提取、网页去噪转录，并打通了词塔的自动建课、生词生成与精读伴读流水线。
 
 ---
 
 ## 🎯 核心工作流与分工
 
-用户只需用自然语言提出需求（如“把最新一期经济学人导入词塔”、“帮我把这个 YouTube 英语演讲导入词塔做成精读课程”），本 Skill 按以下四步全自动完成：
+用户只需用自然语言提出需求（如“查看《经济学人》最近期数”、“帮我把最新一期经济学人导入词塔”、“帮我把这个 YouTube 英语演讲导入词塔做成精读课程”），本 Skill 按以下四步全自动完成：
 
 ```text
-[用户输入] ──► 1. 前置自检 (WORDS_API_KEY 与依赖检测)
-                 │
-                 ▼
-              2. 多源采集 (内置外刊下载 / YouTube字幕 / 网页正文)
-                 │
-                 ▼
-              3. 排版清洗与预处理 (去除杂质、段落规范化)
-                 │
-                 ▼
-              4. 落地词塔 (自动上传建课、生成双语伴读与生词表)
+[用户自然语言需求] ──► 1. 前置自检 (WORDS_API_KEY 与依赖检测)
+                          │
+                          ▼
+                       2. 多源采集 (内置外刊EPUB / YouTube字幕 / 网页正文)
+                          │
+                          ▼
+                       3. 排版清洗与预处理 (去除杂质、段落规范化)
+                          │
+                          ▼
+                       4. 落地词塔 (自动上传建课、生成双语伴读与生词表)
 ```
 
 ---
@@ -61,13 +61,13 @@ metadata:
 
 根据用户的输入类型，自动选择最佳采集引擎：
 
-### 模式 A：《经济学人》及外刊（内置引擎）
+### 模式 A：《经济学人》及外刊（内置引擎，提取 EPUB）
 无需外部依赖，直接运行本 Skill 内置的杂志获取脚本：
 - **查看期数**：
   ```bash
   python3 scripts/fetch_magazine.py list [-m economist|new_yorker|atlantic|wired] [--limit 5]
   ```
-- **下载指定期数或最新一期（默认 EPUB）**：
+- **下载指定期数或最新一期（EPUB 格式）**：
   ```bash
   python3 scripts/fetch_magazine.py download -i latest -f epub -o ./downloads/economist
   ```
@@ -119,7 +119,10 @@ python3 .agents/skills/wordtower/scripts/request.py --text <清洗后的Markdown
 
 ## 💡 常用自然语言调用示例
 
-- *“帮我把最新一期的《经济学人》导入词塔。”*
-- *“把这期经济学人的 Leaders 章节导入词塔学习。”*
+- *“查看《经济学人》最近期数”*
+- *“查看《纽约客》最近期数”*
+- *“帮我把最新一期《经济学人》导入词塔学习”*
+- *“下载最新一期《纽约客》EPUB 并导入词塔”*
+- *“把这期《经济学人》的 Leaders 章节导入词塔”*
 - *“把这个 YouTube 演讲视频做成词塔精读课程：https://www.youtube.com/watch?v=xxx”*
 - *“帮我把这篇文章导入词塔：https://example.com/article”*
