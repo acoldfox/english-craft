@@ -1,29 +1,29 @@
 ---
 name: wordtower-importer
-description: 词塔（WordTower）专属语料导入助手。一站式获取《经济学人》（The Economist）等英文原版杂志（内置 EPUB）、YouTube 视频字幕、外媒文章，进行格式清洗、双语对照与难度评估，并全自动导入词塔（WordTower）生成双语精读课程。内置依赖自动安装与 WORDS_API_KEY 引导配置向导。
+description: 词塔（WordTower）专属语料导入助手。一站式获取《经济学人》（The Economist）等英文原版杂志（内置 EPUB）、YouTube 视频与带时间戳字幕（对齐词塔 v0.7.0）、外媒文章，全自动导入词塔生成双语精读课程。内置依赖自动安装与 WORDTOWER_API_KEY 引导配置向导。
 metadata:
-  version: "1.0.1"
+  version: "1.1.0"
   homepage: "https://github.com/acoldfox/wordtower-importer"
 ---
 
 # 词塔语料导入助手 (WordTower Importer)
 
-本 Skill 是专为 [词塔（WordTower）](https://wordtower.app) 打造的**多渠道外语语料导入总控中枢**。它集成了外刊 EPUB 获取（经济学人等）、视频字幕提取、网页去噪转录，并打通了词塔的自动建课、生词生成与精读伴读流水线。
+本 Skill 是专为 [词塔（WordTower）](https://wordtower.app) 打造的**多渠道外语语料导入总控中枢**。对齐词塔官方 Skill v0.7.0 规范，集成了外刊 EPUB 获取（经济学人等）、YouTube 视频与带时间戳字幕提取、网页去噪转录，并全自动完成词塔视频/文本建课、生词生成与精读伴读流水线。
 
 ---
 
 ## 🎯 核心工作流与分工
 
-用户只需用自然语言提出需求（如“查看《经济学人》最近期数”、“帮我把最新一期经济学人导入词塔”、“帮我把这个 YouTube 英语演讲导入词塔做成精读课程”），本 Skill 按以下四步全自动完成：
+用户只需用自然语言提出需求（如“把最新一期经济学人导入词塔”、“帮我把这个 YouTube 英语演讲导入词塔做成精读课程”），本 Skill 按以下流程全自动完成：
 
 ```text
-[用户自然语言需求] ──► 1. 前置自检 (WORDS_API_KEY 与依赖检测)
+[用户自然语言需求] ──► 1. 前置自检 (WORDTOWER_API_KEY 与依赖检测)
                           │
                           ▼
-                       2. 多源采集 (内置外刊EPUB / YouTube字幕 / 网页正文)
+                       2. 多源采集 (内置外刊EPUB / YouTube SRT字幕 / 网页正文)
                           │
                           ▼
-                       3. 排版清洗与预处理 (去除杂质、段落规范化)
+                       3. 格式规范与时间轴对齐 (保留视频同步播放与跳转)
                           │
                           ▼
                        4. 落地词塔 (自动上传建课、生成双语伴读与生词表)
@@ -35,13 +35,13 @@ metadata:
 
 在执行任何导入前，Agent 必须先行自检：
 
-### 1. 词塔凭证（`WORDS_API_KEY`）检测与引导
-- 检查环境变量 `WORDS_API_KEY` 是否已配置。
+### 1. 词塔凭证（`WORDTOWER_API_KEY`）检测与引导
+- 检查环境变量 `WORDTOWER_API_KEY`（或兼容旧版的 `WORDS_API_KEY`）是否已配置。
 - **若未配置**：暂停后续步骤，以清晰、保姆级的步骤向用户引导：
-  1. 提示用户前往词塔网页端或客户端的 **「账户 → Skill 与 Token」** 创建 Token。
+  1. 提示用户前往词塔网页端或客户端的 **「账户 → Skill 与 Token」** 创建 Token（格式以 `wtk-` 开头）。
   2. 强调需勾选 `imports:text` 与 `imports:epub`（或套餐默认导入权限）。
-  3. 提示用户：**“你可以直接在当前对话框把 Token 发给我，我来帮你保存；或者在终端中运行 `export WORDS_API_KEY=wt_xxx`。”**
-  4. 收到 Token 后，协助将其写入本地环境变量或配置文件，并通过词塔的接口测试连通性，然后**自动恢复之前中断的导入任务**。
+  3. 提示用户：**“你可以直接在当前对话框把 Token 发给我，我来帮你保存；或者在终端中运行 `export WORDTOWER_API_KEY=wtk_xxx`。”**
+  4. 收到 Token 后，协助将其写入本地环境变量或配置文件，并通过词塔官方接口测试连通性，然后**自动恢复之前中断的导入任务**。
 
 ### 2. 外部依赖检测与静默安装
 - 若语料来源涉及 YouTube 视频，且本地未安装 `baoyu-youtube-transcript`：
@@ -57,9 +57,9 @@ metadata:
 
 ---
 
-## 📚 第二步：多渠道语料采集
+## 📚 第二步：多渠道语料采集与词塔对接
 
-根据用户的输入类型，自动选择最佳采集引擎：
+根据用户的输入类型，自动选择最佳采集引擎并直接调用词塔导入接口：
 
 ### 模式 A：《经济学人》及外刊（内置引擎，提取 EPUB）
 无需外部依赖，直接运行本 Skill 内置的杂志获取脚本：
@@ -71,58 +71,63 @@ metadata:
   ```bash
   python3 scripts/fetch_magazine.py download -i latest -f epub -o ./downloads/economist
   ```
-- 脚本已内置本地代理探测（1082 / 7890 等）和国内加速镜像自动回退，确保稳定高速下载。
+- **导入词塔**：
+  ```bash
+  python3 .agents/skills/wordtower/scripts/request.py --epub <下载的EPUB路径> --title "The Economist 2026-11-07"
+  ```
+  *(注：若用户要求只导入指定章节或非政治类题材，遵循 wordtower 的本地选章脚本裁剪后再行提交)*
 
-### 模式 B：YouTube 视频字幕
-调用 `baoyu-youtube-transcript` 获取结构化文本：
-```bash
-npx -y bun .agents/skills/baoyu-youtube-transcript/scripts/main.ts <YouTube-URL> --languages en --format text
-```
+---
+
+### 模式 B：YouTube 视频与带时间戳字幕导入（词塔 v0.7.0 原生支持）
+词塔官方 Skill v0.7.0 原生支持 YouTube 视频课程导入，并能完整保留原视频时间轴与逐句跳转！
+
+1. **获取带时间戳的 SRT 字幕**：
+   调用 `baoyu-youtube-transcript` 导出 `.srt` 文件（例如保存到 `./downloads/subtitles/video.srt`）：
+   ```bash
+   npx -y bun .agents/skills/baoyu-youtube-transcript/scripts/main.ts "<YouTube-URL>" --format srt --languages en
+   ```
+2. **生成词塔视频课程预览（Preview）**：
+   调用官方脚本，同时传入视频 URL 与字幕路径：
+   ```bash
+   python3 .agents/skills/wordtower/scripts/request.py --youtube "<YouTube-URL>" --subtitles "<字幕.srt路径>" --title "<视频标题>"
+   ```
+   *官方脚本会自动解析 SRT 时间戳（转换为 start / duration），并调用服务端的 `/imports/youtube/preview` 取得 `preview_id` 和额度报价。*
+3. **提交建课任务**：
+   生成随机 UUID 作为 `idempotency_key`，写入临时请求文件 `submit.json`：
+   ```json
+   {"api_name": "/imports/text", "preview_id": "<实际preview_id>", "idempotency_key": "<生成的UUID>"}
+   ```
+   执行提交：
+   ```bash
+   python3 .agents/skills/wordtower/scripts/request.py submit.json
+   ```
+4. **轮询状态并向用户反馈**：
+   取得返回的 `job_id`，轮询查询状态：
+   ```json
+   {"api_name": "/imports/status", "job_id": "<实际job_id>"}
+   ```
+   当 `status` 为 `succeeded` 时，向用户汇报课程创建成功，告知该课程已保留 YouTube 播放器与同步字幕时间轴，支持句子点读与生词精读！
+
+---
 
 ### 模式 C：外媒文章 / 博客网页 URL
-调用 `baoyu-url-to-markdown` 提取正文并过滤广告：
-```bash
-npx -y bun .agents/skills/baoyu-url-to-markdown/scripts/main.ts <Web-URL>
-```
-
----
-
-## 🧹 第三步：排版清洗与生词预处理
-
-1. **排版规范化**：
-   对于抓取到的长篇字幕或网页文章，可借助 `baoyu-format-markdown` 修正断句、去除多余换行、规范标点与段落层级。
-2. **双语辅助（可选）**：
-   若用户希望在导入前生成高质量参考译文，可借助 `baoyu-translate` 生成段落级对照。
-
----
-
-## 🚀 第四步：落地导入词塔（WordTower）
-
-利用官方 `wordtower` 组件，直接执行导入并生成课程：
-
-### 1. EPUB 杂志导入
-```bash
-python3 .agents/skills/wordtower/scripts/request.py --epub <下载的EPUB路径> --title "The Economist 2026-11-07"
-```
-*(注：若用户要求只导入指定章节或非政治类题材，遵循 wordtower 的本地选章脚本裁剪后再行提交)*
-
-### 2. 文本 / Markdown / YouTube 字幕导入
-```bash
-python3 .agents/skills/wordtower/scripts/request.py --text <清洗后的Markdown路径> --title "视频/文章标题"
-```
-
-### 3. 查询任务状态并反馈
-- 脚本返回 `job_id` 后，通过 `/imports/status` 轮询直到状态为 `succeeded`。
-- 向用户反馈课程创建成功的通知，并附上阅读与伴读建议。
+1. 调用 `baoyu-url-to-markdown` 提取正文并过滤广告：
+   ```bash
+   npx -y bun .agents/skills/baoyu-url-to-markdown/scripts/main.ts <Web-URL>
+   ```
+2. 调用官方脚本导入：
+   ```bash
+   python3 .agents/skills/wordtower/scripts/request.py --text <清洗后的Markdown路径> --title "文章标题"
+   ```
 
 ---
 
 ## 💡 常用自然语言调用示例
 
 - *“查看《经济学人》最近期数”*
-- *“查看《纽约客》最近期数”*
 - *“帮我把最新一期《经济学人》导入词塔学习”*
 - *“下载最新一期《纽约客》EPUB 并导入词塔”*
 - *“把这期《经济学人》的 Leaders 章节导入词塔”*
-- *“把这个 YouTube 演讲视频做成词塔精读课程：https://www.youtube.com/watch?v=xxx”*
+- *“把这个 YouTube 英语演讲导入词塔，保留视频时间轴做成精读课程：https://www.youtube.com/watch?v=xxx”*
 - *“帮我把这篇文章导入词塔：https://example.com/article”*

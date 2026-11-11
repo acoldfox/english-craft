@@ -9,12 +9,12 @@
 
 ## ✨ 核心特性
 
-- 📰 **外刊精读一键导入**：内置《经济学人》（The Economist）、《纽约客》（The New Yorker）、《大西洋月刊》（The Atlantic）、《连线》（WIRED）等刊物获取引擎，自动下载优质 EPUB 原版并导入词塔。
-- 🎬 **YouTube 视频字幕提取**：无缝调度社区成熟方案，提取视频带时间戳字幕并转为精读课程。
+- 🎬 **YouTube 视频与时间戳字幕原生导入（官方 v0.7.0 对齐）**：原生支持词塔 v0.7.0 视频课程规范！一键提取 YouTube 视频字幕（SRT/VTT/JSON），导入词塔后**完美保留原视频播放器与逐句时间轴跳转**，实现点句跟读与原声伴读。
+- 📰 **外刊精读一键导入**：内置《经济学人》（The Economist）、《纽约客》（The New Yorker）、《大西洋月刊》（The Atlantic）、《连线》（WIRED）等优质外刊获取引擎，自动下载 EPUB 原版并导入词塔。
 - 🌐 **外媒博文网页转录**：任意英文网页/博客一键去噪，剥离广告提取纯净正文导入词塔。
 - 🧹 **智能排版与双语对照**：自动化段落规整、去噪清洗，支持生成地道参考译文与术语对齐。
 - 🚀 **词塔（WordTower）全自动建课**：一键上传生成词塔精读课程，提取核心生词，无缝开启 AI 伴读。
-- 🧭 **保姆级向导机制**：智能检测环境，引导用户配置 `WORDS_API_KEY`，支持全自动补齐外部依赖。
+- 🧭 **保姆级向导机制**：智能检测环境，引导用户配置 `WORDTOWER_API_KEY`，支持全自动补齐外部依赖。
 
 ---
 
@@ -36,7 +36,12 @@ npx skills add acoldfox/wordtower-importer -y
 
 安装完成后，在 AI 对话框中**直接使用自然语言**提出需求，Agent 即可全自动处理：
 
-### 1. 外刊杂志精读
+### 1. YouTube 视频字幕学习（原生时间轴保留）
+- **视频转精读课程**：
+  > “把这个 YouTube 英语演讲导入词塔做成精读课程：`https://youtube.com/watch?v=xxxx`”  
+  > “把这个 YouTube 视频和英文字幕导入词塔，保留时间轴”
+
+### 2. 外刊杂志精读
 - **查看期数**：
   > “查看《经济学人》最近期数”  
   > “查看《纽约客》最近期数”
@@ -46,10 +51,6 @@ npx skills add acoldfox/wordtower-importer -y
 - **指定章节导入**：
   > “把这期《经济学人》的 Leaders 章节导入词塔”
 
-### 2. YouTube 视频字幕学习
-- **视频转精读课程**：
-  > “帮我把这个 YouTube 英语演讲做成词塔精读课程：`https://youtube.com/watch?v=xxxx`”
-
 ### 3. 外媒网页文章精读
 - **网页文章转录**：
   > “把这篇 TechCrunch 科技报道导入词塔：`https://techcrunch.com/xxxx`”
@@ -58,13 +59,13 @@ npx skills add acoldfox/wordtower-importer -y
 
 ## 🔑 词塔 API Key 配置指南
 
-导入词塔课程需要配置 `WORDS_API_KEY`：
+导入词塔课程需要配置 `WORDTOWER_API_KEY`（词塔官方 v0.7.0 凭证）：
 
 1. 前往词塔官方平台（[WordTower](https://wordtower.app)），进入 **「账户 → Skill 与 Token」**。
-2. 创建一个 Token，确保勾选导入权限（`imports:text` 与 `imports:epub`）。
+2. 创建一个 Token（前缀为 `wtk-`），确保勾选导入权限（`imports:text` 与 `imports:epub`）。
 3. 在终端设置环境变量：
    ```bash
-   export WORDS_API_KEY=wt_xxxxxxxxxxxxxxxx
+   export WORDTOWER_API_KEY=wtk_xxxxxxxxxxxxxxxx
    ```
    *(或者在使用 Agent 时，直接将 Token 发送给 Agent 协助自动配置)*。
 
@@ -74,9 +75,9 @@ npx skills add acoldfox/wordtower-importer -y
 
 本项目作为中枢调度器，离不开以下优秀开源项目的贡献，特此致谢：
 
+- **词塔官方生态**：[word-tower/skills](https://github.com/word-tower/skills) 提供的官方 API 调用网关与 v0.7.0 视频字幕课程规范。
 - **电子书与外刊源**：[hehonghui/awesome-english-ebooks](https://github.com/hehonghui/awesome-english-ebooks) 提供的定期更新与归档。
 - **视频与文本提取方案**：[jimliu/baoyu-skills](https://github.com/jimliu/baoyu-skills) 提供的优质字幕与网页转录组件。
-- **阅读与词汇学习终端**：[WordTower (词塔)](https://wordtower.app) 官方精读伴读生态。
 
 ---
 
