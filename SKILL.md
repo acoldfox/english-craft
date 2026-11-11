@@ -1,26 +1,26 @@
 ---
 name: wordtower-importer
-description: 词塔（WordTower）专属语料导入助手。一站式获取《经济学人》（The Economist）等英文原版杂志（内置 EPUB）、YouTube 视频与带时间戳字幕（对齐词塔 v0.7.0）、外媒文章，全自动导入词塔生成双语精读课程。内置依赖自动安装与 WORDTOWER_API_KEY 引导配置向导。
+description: 词塔（WordTower）专属语料导入助手。一站式获取英文原版杂志（经济学人等）、公有领域名著书籍（Standard Ebooks 与古登堡计划）、YouTube 视频与带时间戳字幕（对齐词塔 v0.7.0）、外媒文章，全自动导入词塔生成双语精读课程。内置依赖自动安装与 WORDTOWER_API_KEY 引导配置向导。
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   homepage: "https://github.com/acoldfox/wordtower-importer"
 ---
 
 # 词塔语料导入助手 (WordTower Importer)
 
-本 Skill 是专为 [词塔（WordTower）](https://wordtower.app) 打造的**多渠道外语语料导入总控中枢**。对齐词塔官方 Skill v0.7.0 规范，集成了外刊 EPUB 获取（经济学人等）、YouTube 视频与带时间戳字幕提取、网页去噪转录，并全自动完成词塔视频/文本建课、生词生成与精读伴读流水线。
+本 Skill 是专为 [词塔（WordTower）](https://wordtower.app) 打造的**多渠道外语语料导入总控中枢**。对齐词塔官方 Skill v0.7.0 规范，集成了外刊 EPUB 获取（经济学人等）、经典名著图书检索（Standard Ebooks & 古登堡）、YouTube 视频与带时间戳字幕提取、网页去噪转录，并全自动完成词塔视频/文本建课、生词生成与精读伴读流水线。
 
 ---
 
 ## 🎯 核心工作流与分工
 
-用户只需用自然语言提出需求（如“把最新一期经济学人导入词塔”、“帮我把这个 YouTube 英语演讲导入词塔做成精读课程”），本 Skill 按以下流程全自动完成：
+用户只需用自然语言提出需求（如“在 Standard Ebooks 搜一下 The Great Gatsby 并导入词塔”、“把最新一期经济学人导入词塔”、“帮我把这个 YouTube 英语演讲导入词塔做成精读课程”），本 Skill 按以下流程全自动完成：
 
 ```text
 [用户自然语言需求] ──► 1. 前置自检 (WORDTOWER_API_KEY 与依赖检测)
                           │
                           ▼
-                       2. 多源采集 (内置外刊EPUB / YouTube SRT字幕 / 网页正文)
+                       2. 多源采集 (外刊EPUB / 经典图书EPUB / YouTube SRT字幕 / 网页正文)
                           │
                           ▼
                        3. 格式规范与时间轴对齐 (保留视频同步播放与跳转)
@@ -79,7 +79,24 @@ metadata:
 
 ---
 
-### 模式 B：YouTube 视频与带时间戳字幕导入（词塔 v0.7.0 原生支持）
+### 模式 B：经典名著图书检索与下载（Standard Ebooks & 古登堡计划）
+内置对全球两大公有领域图书馆的搜索与下载支持，优先检索高质量精排版源（Standard Ebooks）：
+- **检索图书**：
+  ```bash
+  python3 scripts/fetch_book.py search "<书名或作者>" [--source auto|standard_ebooks|gutenberg] [--limit 5]
+  ```
+- **下载并导入词塔**：
+  ```bash
+  # 下载图书 EPUB 到本地
+  python3 scripts/fetch_book.py download "<书名或作者>" [--source auto|standard_ebooks|gutenberg] -o ./downloads/books
+
+  # 提交至词塔生成书籍精读课程
+  python3 .agents/skills/wordtower/scripts/request.py --epub <下载的图书EPUB路径> --title "<书籍标题>"
+  ```
+
+---
+
+### 模式 C：YouTube 视频与带时间戳字幕导入（词塔 v0.7.0 原生支持）
 词塔官方 Skill v0.7.0 原生支持 YouTube 视频课程导入，并能完整保留原视频时间轴与逐句跳转！
 
 1. **获取带时间戳的 SRT 字幕**：
@@ -111,7 +128,7 @@ metadata:
 
 ---
 
-### 模式 C：外媒文章 / 博客网页 URL
+### 模式 D：外媒文章 / 博客网页 URL
 1. 调用 `baoyu-url-to-markdown` 提取正文并过滤广告：
    ```bash
    npx -y bun .agents/skills/baoyu-url-to-markdown/scripts/main.ts <Web-URL>
@@ -125,9 +142,19 @@ metadata:
 
 ## 💡 常用自然语言调用示例
 
+### 1. 经典图书检索与导入
+- *“在 Standard Ebooks 搜一下《了不起的盖茨比》(The Great Gatsby) 并导入词塔”*
+- *“在古登堡计划搜一下《傲慢与偏见》(Pride and Prejudice) 并导入词塔”*
+- *“帮我搜《福尔摩斯探案集》电子书并导入词塔学习”*
+
+### 2. 外刊杂志精读
 - *“查看《经济学人》最近期数”*
 - *“帮我把最新一期《经济学人》导入词塔学习”*
 - *“下载最新一期《纽约客》EPUB 并导入词塔”*
 - *“把这期《经济学人》的 Leaders 章节导入词塔”*
+
+### 3. YouTube 视频原声伴读
 - *“把这个 YouTube 英语演讲导入词塔，保留视频时间轴做成精读课程：https://www.youtube.com/watch?v=xxx”*
+
+### 4. 外媒网页文章精读
 - *“帮我把这篇文章导入词塔：https://example.com/article”*
