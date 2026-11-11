@@ -3,7 +3,7 @@ name: english-craft
 description: 英文语料工坊（EnglishCraft）。一站式英文原版语料策展、散装文章装订成册、词汇提炼分析、A4打印排版，并支持一键导入词塔（WordTower）生成双语伴读课程。支持《经济学人》等外刊、Standard Ebooks 与古登堡名著、YouTube 英文字幕、外媒网页去噪长文。
 metadata:
   version: "2.0.0"
-  homepage: "https://github.com/acoldfox/wordtower-importer"
+  homepage: "https://github.com/acoldfox/english-craft"
 ---
 
 # 英文语料工坊 (EnglishCraft)
