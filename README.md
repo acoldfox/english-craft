@@ -147,6 +147,18 @@ english-craft/
 
 ---
 
+## 🙏 致谢与数据来源 (Acknowledgments & Credits)
+
+本项目站在巨人的肩膀上，对以下杰出的开源项目、非营利组织与数字化公共图书馆致以诚挚的感谢：
+
+- **[awesome-english-ebooks](https://github.com/hehonghui/awesome-english-ebooks)** (by [@hehonghui](https://github.com/hehonghui))：持续维护的高品质英文原版期刊资源库（《经济学人》《纽约客》《大西洋月刊》《连线》）。
+- **[Standard Ebooks](https://standardebooks.org/)**：致敬其坚持极客工匠精神、用现代排版标准与精美装帧重新校对制作的高质量公有领域原版电子书。
+- **[Project Gutenberg](https://www.gutenberg.org/)**：致敬数字出版先驱 Michael Hart 及古登堡计划对全球公有领域名著数字化的历史性贡献；同时感谢 [Gutendex](https://gutendex.com/) 提供的 REST 检索支持。
+- **[词塔 (WordTower)](https://www.wordtower.cn)**：专注真实语境精读与科学词汇记忆的双语学习平台，为本项目提供了优秀的句子点读与课程构建范式。
+- **[baoyu-skills](https://github.com/jimliu/baoyu-skills)** (by [@jimliu](https://github.com/jimliu))：优秀的 YouTube 字幕提取与网页正文去噪转录工具组件。
+
+---
+
 ## 📄 License
 
 本项目采用 [MIT License](LICENSE) 开源协议。

@@ -132,3 +132,14 @@ python3 scripts/exporters/wordtower.py youtube "<YouTube-URL>" --subtitles <字�
 - **词塔对接**：
   - *“把下载好的这本书导入词塔生成精读课程”*
   - *“把这个 YouTube 英语演讲和字幕一起导入词塔做成点读课程”*
+
+---
+
+## 🙏 致谢与数据来源
+
+本项目尊重并鸣谢以下优秀的开源项目与公共数字图书馆：
+- 外刊语料：[hehonghui/awesome-english-ebooks](https://github.com/hehonghui/awesome-english-ebooks)
+- 公版名著：[Standard Ebooks](https://standardebooks.org/) 与 [Project Gutenberg](https://www.gutenberg.org/)（以及 [Gutendex](https://gutendex.com/)）
+- 伴读平台：[词塔 (WordTower)](https://www.wordtower.cn)
+- 转录工具：[baoyu-skills](https://github.com/jimliu/baoyu-skills)
+
