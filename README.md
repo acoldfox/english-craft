@@ -75,7 +75,7 @@ npx skills add acoldfox/wordtower-importer -y
 
 本项目作为中枢调度器，离不开以下优秀开源项目的贡献，特此致谢：
 
-- **词塔官方生态**：[word-tower/skills](https://github.com/word-tower/skills) 提供的官方 API 调用网关与 v0.7.0 视频字幕课程规范。
+- **词塔官方生态**：[word-tower/skills](https://github.com/word-tower/skills) 提供的官方 API 调用网关。
 - **电子书与外刊源**：[hehonghui/awesome-english-ebooks](https://github.com/hehonghui/awesome-english-ebooks) 提供的定期更新与归档。
 - **视频与文本提取方案**：[jimliu/baoyu-skills](https://github.com/jimliu/baoyu-skills) 提供的优质字幕与网页转录组件。
 
