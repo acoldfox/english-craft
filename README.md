@@ -1,4 +1,4 @@
-# 🗼 WordTower Importer (`wordtower-importer`)
+# WordTower Importer (`wordtower-importer`)
 
 > 词塔（WordTower）专属语料导入助手。一键将《经济学人》等优质外刊、YouTube 视频字幕、外媒文章等多种渠道素材清洗、对齐并导入词塔生成双语精读课程。
 
