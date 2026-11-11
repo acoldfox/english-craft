@@ -8,7 +8,7 @@ metadata:
 
 # 词塔语料导入助手 (WordTower Importer)
 
-本 Skill 是专为 [词塔（WordTower）](https://wordtower.app) 打造的**多渠道外语语料导入总控中枢**。对齐词塔官方 Skill v0.7.0 规范，集成了外刊 EPUB 获取（经济学人等）、经典名著图书检索（Standard Ebooks & 古登堡）、YouTube 视频与带时间戳字幕提取、网页去噪转录，并全自动完成词塔视频/文本建课、生词生成与精读伴读流水线。
+本 Skill 是专为 [词塔（WordTower）](https://www.wordtower.cn) 打造的**多渠道外语语料导入总控中枢**。对齐词塔官方 Skill v0.7.0 规范，集成了外刊 EPUB 获取（经济学人等）、经典名著图书检索（Standard Ebooks & 古登堡）、YouTube 视频与带时间戳字幕提取、网页去噪转录，并全自动完成词塔视频/文本建课、生词生成与精读伴读流水线。
 
 ---
 

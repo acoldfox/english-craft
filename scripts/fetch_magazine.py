@@ -16,6 +16,7 @@ import argparse
 import subprocess
 import urllib.request
 import urllib.error
+import zipfile
 
 REPO_OWNER = "hehonghui"
 REPO_NAME = "awesome-english-ebooks"
@@ -224,6 +225,8 @@ def download_file(url, dest_path):
                 cmd.extend(["-o", temp_path, attempt_url])
                 res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 if res.returncode == 0 and os.path.exists(temp_path) and os.path.getsize(temp_path) > 0:
+                    if not zipfile.is_zipfile(temp_path):
+                        raise RuntimeError("Downloaded file is not a valid EPUB zip archive")
                     os.replace(temp_path, dest_path)
                     return True
                 last_error = res.stderr.decode("utf-8", errors="replace")
@@ -234,6 +237,8 @@ def download_file(url, dest_path):
                 with opener.open(req, timeout=40) as resp, open(temp_path, "wb") as f:
                     shutil.copyfileobj(resp, f)
                 if os.path.exists(temp_path) and os.path.getsize(temp_path) > 0:
+                    if not zipfile.is_zipfile(temp_path):
+                        raise RuntimeError("Downloaded file is not a valid EPUB zip archive")
                     os.replace(temp_path, dest_path)
                     return True
         except Exception as e:

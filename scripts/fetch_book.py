@@ -13,6 +13,7 @@ import urllib.parse
 import argparse
 import subprocess
 import xml.etree.ElementTree as ET
+import zipfile
 
 DEFAULT_PROXIES = [1082, 7890, 7897, 1087, 10808, 1080]
 
@@ -182,7 +183,7 @@ def download_epub(book_info, out_dir="./downloads/books"):
         filename += ".epub"
     dest_path = os.path.join(out_dir, filename)
 
-    if os.path.exists(dest_path) and os.path.getsize(dest_path) > 1024:
+    if os.path.exists(dest_path) and os.path.getsize(dest_path) > 1024 and zipfile.is_zipfile(dest_path):
         return dest_path, os.path.getsize(dest_path), True
 
     proxy = detect_proxy()
@@ -193,6 +194,10 @@ def download_epub(book_info, out_dir="./downloads/books"):
 
     res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if res.returncode == 0 and os.path.exists(dest_path + ".tmp") and os.path.getsize(dest_path + ".tmp") > 1024:
+        if not zipfile.is_zipfile(dest_path + ".tmp"):
+            if os.path.exists(dest_path + ".tmp"):
+                os.remove(dest_path + ".tmp")
+            raise RuntimeError("Downloaded file is not a valid EPUB zip archive (may be an HTML redirect or blocked page)")
         os.replace(dest_path + ".tmp", dest_path)
         return dest_path, os.path.getsize(dest_path), False
     else:
@@ -253,12 +258,53 @@ def main():
         print("─" * 65)
 
     elif args.command == "download":
-        results = search_books(args.query, source=args.source, limit=1)
-        if not results:
-            print(f"Error: No book found matching '{args.query}'", file=sys.stderr)
-            sys.exit(1)
+        query_str = args.query.strip()
+        target = None
 
-        target = results[0]
+        if query_str.startswith("http://") or query_str.startswith("https://"):
+            if "standardebooks.org" in query_str:
+                clean_url = query_str.split("?")[0].rstrip("/")
+                slug = clean_url.split("/")[-1]
+                epub_url = f"{clean_url}/downloads/{slug}_advanced.epub?source=download" if not clean_url.endswith(".epub") else query_str
+                target = {
+                    "id": slug,
+                    "title": slug.replace("-", " ").title(),
+                    "author": "Standard Ebooks",
+                    "download_url": epub_url,
+                    "source": "Standard Ebooks",
+                }
+            elif "gutenberg.org" in query_str:
+                match = re.search(r"(\d+)", query_str)
+                bid = match.group(1) if match else "unknown"
+                target = {
+                    "id": bid,
+                    "title": f"Gutenberg eBook #{bid}",
+                    "author": "Project Gutenberg",
+                    "download_url": f"https://www.gutenberg.org/cache/epub/{bid}/pg{bid}.epub",
+                    "source": "Project Gutenberg",
+                }
+            else:
+                target = {
+                    "id": "direct",
+                    "title": os.path.splitext(os.path.basename(query_str.split("?")[0]))[0] or "eBook",
+                    "author": "Online",
+                    "download_url": query_str,
+                    "source": "Direct URL",
+                }
+        elif query_str.isdigit():
+            target = {
+                "id": query_str,
+                "title": f"Gutenberg eBook #{query_str}",
+                "author": "Project Gutenberg",
+                "download_url": f"https://www.gutenberg.org/cache/epub/{query_str}/pg{query_str}.epub",
+                "source": "Project Gutenberg",
+            }
+        else:
+            results = search_books(query_str, source=args.source, limit=1)
+            if not results:
+                print(f"Error: No book found matching '{query_str}'", file=sys.stderr)
+                sys.exit(1)
+            target = results[0]
         print(f"⬇ Downloading '{target['title']}' by {target['author']} from {target['source']} ...")
         try:
             dest_path, size_bytes, existing = download_epub(target, out_dir=args.output_dir)
