@@ -59,7 +59,7 @@ npx skills add acoldfox/wordtower-importer -y
 
 ## 🔑 词塔 API Key 配置指南
 
-导入词塔课程需要配置 `WORDTOWER_API_KEY`（词塔官方 v0.7.0 凭证）：
+导入词塔课程需要配置 `WORDTOWER_API_KEY`（词塔官方凭证）：
 
 1. 前往词塔官方平台（[WordTower](https://www.wordtower.cn)），进入 **「账户 → Skill 与 Token」**。
 2. 创建一个 Token（前缀为 `wtk-`），确保勾选导入权限（`imports:text` 与 `imports:epub`）。
