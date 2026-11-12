@@ -135,13 +135,3 @@ english-craft/
 ## 📄 License
 
 本项目采用 [MIT License](LICENSE) 开源协议。
-
-
-### YouTube 同步字幕导入约束
-
-- 视频课程必须使用 `wordtower.py youtube URL --subtitles FILE`，字幕只接受带真实起止时间的 SRT/VTT 或官方 timed JSON。不得把字幕转 Markdown 后用 `text` 导入，也不得在字幕获取失败时降级成纯文本建课。
-- 正文只含字幕，不插入视频标题、简介、总结或翻译；这些内容会破坏字幕与正文的对应关系。标题通过 `--title` 指定。
-- 提交前脚本必须验证服务端预览的 `media_type=youtube`、`source_url` 和正数 `subtitle_count`；不满足即停止，不提交课程。
-- 找不到最新版官方技能时，可设置 `WORDTOWER_REQUEST_SCRIPT=/absolute/path/wordtower/scripts/request.py`。该脚本须与同包 `config.json` 配套，并支持 `--youtube`、`--subtitles` 与当前 Token 协议。不要修改 API 地址或降级使用旧技能。
-- SRT 提供字幕片段级时间轴，与 App 的句子级高亮能力一致；它不包含真实逐词对齐，不得伪造均分单词时间。
-- 已经以纯文本导入的历史课程不会被自动修复；应重新使用原始时间字幕导入，不从正文猜测时间戳。
