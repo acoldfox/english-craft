@@ -148,9 +148,12 @@ python3 {baseDir}/scripts/exporters/wordtower.py epub <path-to-epub> --title "<�
 # 导出 Markdown/文本
 python3 {baseDir}/scripts/exporters/wordtower.py text <path-to-md> --title "<课程名>"
 
-# 导出带时间戳字幕的 YouTube 视频课程（先用 baoyu-youtube-transcript 提取 .srt，再一键建课）
-npx -y bun .agents/skills/baoyu-youtube-transcript/scripts/main.ts "<YouTube-URL>" --format srt --languages en -o ./downloads/subtitles/video.srt
-python3 {baseDir}/scripts/exporters/wordtower.py youtube "<YouTube-URL>" --subtitles ./downloads/subtitles/video.srt --title "<课程名>"
+# 导出带时间戳字幕的 YouTube 视频课程（支持原生一行命令建课，无需 Node/Bun）
+python3 {baseDir}/scripts/fetch_youtube.py wordtower "<YouTube-URL>" [--title "<课程名>"]
+
+# 或分步执行字幕下载与导出：
+python3 {baseDir}/scripts/fetch_youtube.py subtitles "<YouTube-URL>" -o ./downloads/subtitles
+python3 {baseDir}/scripts/exporters/wordtower.py youtube "<YouTube-URL>" --subtitles ./downloads/subtitles/<video-id>.en.srt --title "<课程名>"
 ```
 
 ---
