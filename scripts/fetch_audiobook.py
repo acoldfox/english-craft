@@ -108,6 +108,15 @@ def clean_tag_text(raw):
     return re.sub(r"\s+", " ", txt).strip()
 
 
+def thumbnail_url(url, width=120):
+    """Convert Amazon media URLs to compact thumbnail sizes for clean Markdown rendering."""
+    if not url:
+        return ""
+    if "media-amazon.com/images/" in url:
+        return re.sub(r"\._[^.]+_\.(jpg|jpeg|png)$", rf"._SX{width}_.\1", url, flags=re.IGNORECASE)
+    return url
+
+
 def parse_search_html(raw_html, base_domain="audiobookbay.lu"):
     """Parse AudioBook Bay search results HTML into structured items."""
     if not raw_html:
@@ -281,6 +290,17 @@ def parse_detail_html(raw_html, url=""):
         desc_body = re.sub(r"^\s*<p[^>]*>.*?</p>", "", desc_match.group(1), count=1, flags=re.DOTALL | re.IGNORECASE)
         description = clean_tag_text(desc_body)
 
+    img_match = re.search(
+        r'<img[^>]+src=["\']([^"\']+)["\'][^>]*itemprop=["\']image["\']',
+        raw_html,
+        re.IGNORECASE,
+    ) or re.search(
+        r'<div class=["\']postContent["\']>.*?<img[^>]+src=["\']([^"\']+)["\']',
+        raw_html,
+        re.DOTALL | re.IGNORECASE,
+    )
+    cover_url = img_match.group(1).strip() if img_match else ""
+
     magnet_uri = build_magnet_uri(info_hash, title, trackers=trackers)
 
     return {
@@ -291,6 +311,7 @@ def parse_detail_html(raw_html, url=""):
         "bitrate": bitrate,
         "abridged": abridged,
         "size": size_str,
+        "cover_url": cover_url,
         "info_hash": info_hash,
         "tracker_count": len(trackers) or len(DEFAULT_TRACKERS),
         "magnet": magnet_uri,
@@ -385,6 +406,7 @@ def main():
     s_parser.add_argument("--limit", "-n", type=int, default=5, help="Max results to return (default: 5)")
     s_parser.add_argument("--page", "-p", type=int, default=1, help="Search result page (default: 1)")
     s_parser.add_argument("--format", "-f", choices=["mp3", "m4b", "MP3", "M4B"], help="Filter by audio format (MP3 or M4B)")
+    s_parser.add_argument("--markdown", "-m", action="store_true", help="Output Markdown table with cover images")
     s_parser.add_argument("--json", action="store_true", help="Output raw JSON")
 
     # magnet / info
@@ -394,6 +416,7 @@ def main():
     m_parser.add_argument("--format", "-f", choices=["mp3", "m4b", "MP3", "M4B"], help="Filter search by audio format (MP3 or M4B)")
     m_parser.add_argument("--output-dir", "-o", default="./downloads/audiobooks", help="Directory to save .magnet and .json metadata")
     m_parser.add_argument("--open", action="store_true", help="Open magnet link in system default BitTorrent client")
+    m_parser.add_argument("--markdown", "-m", action="store_true", help="Output Markdown card with cover image")
     m_parser.add_argument("--json", action="store_true", help="Output raw JSON")
 
     args = parser.parse_args()
@@ -407,6 +430,21 @@ def main():
             print(json.dumps(results, indent=2, ensure_ascii=False))
             return
 
+        if args.markdown:
+            print(f"### 🎧 AudioBook Bay 搜索结果：`{args.query}`（共 {len(results)} 条）\n")
+            if not results:
+                print("未找到匹配的有声书，请尝试缩短关键词。")
+                return
+            print("| 编号 | 封面 | 书名与作者 | 格式 / 码率 | 大小 | 发布日期 |")
+            print("| :---: | :---: | :--- | :---: | :---: | :---: |")
+            for idx, item in enumerate(results, 1):
+                thumb = thumbnail_url(item.get("cover_url", ""), width=100)
+                cover_md = f"![封面]({thumb})" if thumb else "无封面"
+                title_md = f"**[{item['title']}]({item['url']})** ({item.get('category', '')})"
+                print(f"| **[{idx}]** | {cover_md} | {title_md} | `{item['format']}` ({item['bitrate']}) | {item['size']} | {item['posted']} |")
+            print("\n> 💡 **多版本选择提示**：如需提取指定版本的磁力链接，可告知编号（如 *“提取第 2 个版本”*，对应 `--index 2`）或指定格式（如 *“要 M4B 格式”*，对应 `-f m4b`）。")
+            return
+
         print(f"\n🎧 AudioBook Bay Search Results for '{args.query}' (Found: {len(results)})")
         print("─" * 72)
         if not results:
@@ -418,7 +456,9 @@ def main():
             )
             if item.get("category"):
                 print(f"      Category: {item['category']}")
-            print(f"      URL: {item['url']}")
+            if item.get("cover_url"):
+                print(f"      Cover:    {item['cover_url']}")
+            print(f"      URL:      {item['url']}")
         print("─" * 72)
 
     elif args.command == "magnet":
@@ -434,6 +474,18 @@ def main():
             detail["magnet_file"] = os.path.abspath(magnet_path)
             detail["metadata_file"] = os.path.abspath(json_path)
             print(json.dumps(detail, indent=2, ensure_ascii=False))
+        elif args.markdown:
+            print(f"### 🎧 {detail['title']}\n")
+            if detail.get("cover_url"):
+                print(f"![封面]({thumbnail_url(detail['cover_url'], width=200)})\n")
+            print(f"- **作者 (Author)**：{detail['author']}")
+            print(f"- **演播 (Narrator)**：{detail['narrator']}")
+            print(f"- **规格 (Format)**：`{detail['format']}` | `{detail['bitrate']}` | `{detail['abridged']}`")
+            print(f"- **大小 (Size)**：{detail['size']}")
+            print(f"- **Info Hash**：`{detail['info_hash']}`")
+            print(f"- **详情页**：[{detail['url']}]({detail['url']})\n")
+            print("#### 🧲 免登录磁力链接 (Magnet URI)")
+            print(f"```text\n{detail['magnet']}\n```")
         else:
             print(f"\n🎧 {detail['title']}")
             print("─" * 72)
@@ -441,6 +493,8 @@ def main():
             print(f"  Narrator:   {detail['narrator']}")
             print(f"  Format:     {detail['format']} | Bitrate: {detail['bitrate']} | {detail['abridged']}")
             print(f"  File Size:  {detail['size']}")
+            if detail.get("cover_url"):
+                print(f"  Cover URL:  {detail['cover_url']}")
             print(f"  Info Hash:  {detail['info_hash']}")
             print(f"  Detail URL: {detail['url']}")
             if detail.get("description"):

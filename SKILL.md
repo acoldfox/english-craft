@@ -82,13 +82,19 @@ python3 {baseDir}/scripts/fetch_book.py download 1661 -o ./downloads/books
 ```
 
 ### 3. 英文有声书搜索与免登录磁力链提取 (`{baseDir}/scripts/fetch_audiobook.py`)
-支持在 AudioBook Bay (`audiobookbay.lu` 及多镜像容灾) 检索无删减英文有声书，提取演播者（Narrator）、音频格式（M4B/MP3）、码率与文件大小，并通过页面 `Info Hash` 与 Tracker 列表免登录合成标准磁力链接：
-```bash
-# 搜索有声书（可按格式 -f m4b|mp3 过滤）
-python3 {baseDir}/scripts/fetch_audiobook.py search "The Great Gatsby" [--limit 5] [-f m4b]
+支持在 AudioBook Bay (`audiobookbay.lu` 及多镜像容灾) 检索无删减英文有声书，提取封面图、演播者（Narrator）、音频格式（M4B/MP3）、码率与文件大小，并通过页面 `Info Hash` 与 Tracker 列表免登录合成标准磁力链接。
 
-# 提取有声书详情与免登录 Magnet 链接（自动保存 .magnet 与 .json，加 --open 可直接唤起本地 BT 客户端）
-python3 {baseDir}/scripts/fetch_audiobook.py magnet "The Great Gatsby" [--index 1] [-o ./downloads/audiobooks] [--open]
+- **封面展示与多结果处理策略**：
+  1. **先执行带封面的搜索列表（`--markdown`）**：将脚本输出的 Markdown 表格（内含 `![封面](...)` 缩略图、编号 `[1]`/`[2]`、格式 `M4B`/`MP3`、码率、文件大小）直接展示在对话回复中，方便用户直观对比封面与不同版本。
+  2. **多版本选择**：
+     - 若存在多个结果且用户未指定具体版本：展示上述带封面的多版本对比表格，询问用户需要哪一个编号（或默认同时附上 `[1]` 号首选版本的磁力链，并提示用户可输入“要第 2 个”或“要 M4B 版”切换）。
+     - 若用户已明确指定编号（如“第 2 个”）或格式（如“M4B 格式”）：直接通过 `--index 2` 或 `-f m4b`（或传入对应详情页 URL）提取该版本的完整演播者信息、封面与磁力链。
+```bash
+# 搜索有声书并输出带封面缩略图的 Markdown 对比表（可按格式 -f m4b|mp3 过滤）
+python3 {baseDir}/scripts/fetch_audiobook.py search "The Great Gatsby" --limit 5 --markdown [-f m4b]
+
+# 按编号 (--index N)、格式 (-f) 或详情 URL 提取指定版本的封面、演播者与免登录 Magnet 链接
+python3 {baseDir}/scripts/fetch_audiobook.py magnet "The Great Gatsby" --index 2 --markdown [-o ./downloads/audiobooks] [--open]
 ```
 
 ### 4. 散装文章装订成册 (`{baseDir}/scripts/binder.py`)

@@ -18,6 +18,7 @@ SAMPLE_SEARCH_HTML = """
 SAMPLE_DETAIL_HTML = """
 <div class="post">
     <div class="postTitle"><h1 itemprop="name">The Great Gatsby - F. Scott Fitzgerald</h1></div>
+    <div class="postContent"><p class="center"><img src="https://m.media-amazon.com/images/I/717IjGLkebL._SL1500_.jpg" itemprop="image" /></p></div>
     <div class="desc" itemprop="">
         <p style="left;">Written by <a href="/?s=f.+scott+fitzgerald"><span class="author" itemprop="author">F. Scott Fitzgerald</span></a> <br />Read by <a href="/?s=alexander+scourby"><span class="narrator" itemprop="author">Alexander Scourby</span></a> <br />Format: <span class="format" itemprop="encodingFormat">MP3</span> <br />Bitrate: <span class="bitrate" itemprop="bitrate">128 Kbps</span> <br /><span class="is_abridged">Unabridged</span> </p>
         <p>A true classic of American literature.</p>
@@ -40,6 +41,11 @@ class AudiobookBayTests(unittest.TestCase):
         self.assertEqual(item["format"], "MP3")
         self.assertEqual(item["bitrate"], "128 Kbps")
         self.assertEqual(item["size"], "260.76 MBs")
+        self.assertEqual(item["cover_url"], "https://m.media-amazon.com/images/I/717IjGLkebL._SL1500_.jpg")
+        self.assertEqual(
+            abb.thumbnail_url(item["cover_url"], width=100),
+            "https://m.media-amazon.com/images/I/717IjGLkebL._SX100_.jpg",
+        )
         self.assertEqual(
             item["url"],
             "https://audiobookbay.lu/abss/dthe-great-gatsby-f-scott-fitzgerald-3/",
@@ -57,6 +63,7 @@ class AudiobookBayTests(unittest.TestCase):
         self.assertEqual(detail["bitrate"], "128 Kbps")
         self.assertEqual(detail["abridged"], "Unabridged")
         self.assertEqual(detail["size"], "260.76 MBs")
+        self.assertEqual(detail["cover_url"], "https://m.media-amazon.com/images/I/717IjGLkebL._SL1500_.jpg")
         self.assertEqual(detail["info_hash"], "4e845c5874a5371462efc59b6b009c7d210a90cd")
         self.assertTrue(
             detail["magnet"].startswith(
