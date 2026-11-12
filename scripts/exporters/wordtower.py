@@ -47,6 +47,20 @@ def find_wordtower_request_script():
 def prepare_env():
     """Validate WORDTOWER_API_KEY (or bridge WORDS_API_KEY) and return sub-process env."""
     env = os.environ.copy()
+    if not env.get("WORDTOWER_API_KEY"):
+        for env_path in [".env", os.path.expanduser("~/.env")]:
+            if os.path.exists(env_path):
+                try:
+                    with open(env_path) as f:
+                        for line in f:
+                            line = line.strip()
+                            if line.startswith("WORDTOWER_API_KEY="):
+                                env["WORDTOWER_API_KEY"] = line.split("=", 1)[1].strip().strip('"\'')
+                            elif line.startswith("NO_PROXY=") or line.startswith("no_proxy="):
+                                env["NO_PROXY"] = line.split("=", 1)[1].strip().strip('"\'')
+                                env["no_proxy"] = env["NO_PROXY"]
+                except Exception:
+                    pass
     token = env.get("WORDTOWER_API_KEY") or env.get("WORDS_API_KEY") or ""
     if not token:
         print("\n⚠️  [WordTower Exporter] Missing WORDTOWER_API_KEY!", file=sys.stderr)
