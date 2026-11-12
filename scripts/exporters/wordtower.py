@@ -17,18 +17,30 @@ import uuid
 import tempfile
 import argparse
 import subprocess
+from pathlib import Path
 
 
 def find_wordtower_request_script():
     """Locate the official WordTower request.py script in workspace or user skills."""
+    override = os.environ.get("WORDTOWER_REQUEST_SCRIPT")
+    if override:
+        path = os.path.abspath(os.path.expanduser(override))
+        if not os.path.isfile(path):
+            raise RuntimeError("WORDTOWER_REQUEST_SCRIPT does not point to a file")
+        return path
     candidates = [
         os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../wordtower/scripts/request.py")),
         os.path.abspath(os.path.join(os.getcwd(), ".agents/skills/wordtower/scripts/request.py")),
-        os.path.expanduser("~/.gemini/antigravity/skills/wordtower/scripts/request.py"),
     ]
-    for c in candidates:
-        if os.path.exists(c):
-            return c
+    for root in ("~/.agents/skills", "~/.codex/skills", "~/.claude/skills",
+                 "~/.gemini/config/skills", "~/.gemini/antigravity/skills"):
+        candidates.append(os.path.expanduser(root + "/wordtower/scripts/request.py"))
+    for candidate in candidates:
+        if os.path.isfile(candidate):
+            # Older installations support only text import and legacy credentials.
+            source = Path(candidate).read_text(encoding="utf-8")
+            if "--subtitles" in source and "WORDTOWER_API_KEY" in source:
+                return candidate
     return None
 
 
@@ -187,12 +199,18 @@ def export_text(text_path, title=None, preview_only=False):
 
     script_path = find_wordtower_request_script()
     if not script_path:
-        print("Error: Could not locate WordTower official skill.", file=sys.stderr)
+        print("Error: Could not locate a current WordTower official skill. Install/update it or set WORDTOWER_REQUEST_SCRIPT to its scripts/request.py.", file=sys.stderr)
         sys.exit(1)
 
     if not os.path.exists(text_path):
         print(f"Error: Text file not found: {text_path}", file=sys.stderr)
         sys.exit(1)
+
+    content = Path(text_path).read_text(encoding="utf-8-sig")
+    if Path(text_path).suffix.lower() in {".srt", ".vtt"} or re.search(
+        r"^\s*\d{2}:\d{2}.*-->", content, re.MULTILINE
+    ):
+        raise ValueError("Timed/video transcripts must use youtube URL --subtitles FILE; text import cannot retain playback timing")
 
     article_title = title or os.path.splitext(os.path.basename(text_path))[0]
     cmd = ["python3", script_path, "--text", os.path.abspath(text_path), "--title", article_title]
@@ -206,6 +224,19 @@ def export_text(text_path, title=None, preview_only=False):
     submit_and_poll(script_path, preview_resp, "/imports/text", env, preview_only=preview_only)
 
 
+def validate_youtube_preview(response, youtube_url):
+    """Never submit a plain-text preview as a synchronized video course."""
+    data = response.get("data") or {}
+    count = data.get("subtitle_count")
+    if (data.get("media_type") != "youtube" or data.get("source_url") != youtube_url
+            or not isinstance(count, int) or isinstance(count, bool) or count <= 0
+            or not data.get("preview_id")):
+        raise RuntimeError("YouTube preview lacks a verified subtitle timeline; import stopped. "
+                           "Use timed SRT/VTT/JSON and update the official WordTower skill/server. "
+                           "Do not fall back to text import.")
+    print(f"✓ Verified YouTube sentence timeline: {count} timed cues")
+
+
 def export_youtube(youtube_url, subtitles_path, title=None, preview_only=False):
     env = prepare_env()
     if not env:
@@ -213,7 +244,7 @@ def export_youtube(youtube_url, subtitles_path, title=None, preview_only=False):
 
     script_path = find_wordtower_request_script()
     if not script_path:
-        print("Error: Could not locate WordTower official skill.", file=sys.stderr)
+        print("Error: Could not locate a current WordTower official skill. Install/update it or set WORDTOWER_REQUEST_SCRIPT to its scripts/request.py.", file=sys.stderr)
         sys.exit(1)
 
     if not os.path.exists(subtitles_path):
@@ -238,6 +269,7 @@ def export_youtube(youtube_url, subtitles_path, title=None, preview_only=False):
         sys.exit(res.returncode)
 
     preview_resp = json.loads(res.stdout)
+    validate_youtube_preview(preview_resp, youtube_url)
     submit_and_poll(script_path, preview_resp, "/imports/text", env, preview_only=preview_only)
 
 
