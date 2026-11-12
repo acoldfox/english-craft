@@ -50,8 +50,11 @@ metadata:
 1. **词塔连通性（可选，仅当用户要求导入词塔时才触发）**：
    - 检查 `WORDTOWER_API_KEY`（或 `WORDS_API_KEY`）是否已配置。
    - 若用户要求导词塔但未配置：引导用户在 [词塔网页端](https://www.wordtower.cn) 创建 Token（格式以 `wtk-` 开头），并协助配置连通。
-2. **外部转录依赖（仅当涉及 YouTube 或网页爬取时自动安装）**：
-   - YouTube 字幕：`npx skills add https://github.com/jimliu/baoyu-skills --skill baoyu-youtube-transcript -y`
+2. **YouTube 提取与字幕依赖（跨平台全自动自愈）**：
+   - 模块 `{baseDir}/scripts/fetch_youtube.py` 原生支持 Windows、macOS 与 Linux。
+   - 当需要获取 YouTube 视频列表或下载时间戳字幕时，若系统尚未安装 `yt-dlp`，脚本内置**自动自愈机制**（自动触发 `python -m pip install -U yt-dlp` 补齐）。
+   - Agent 亦可主动自检并安装（Windows: `python -m pip install -U yt-dlp` 或 `winget install yt-dlp`；macOS: `brew install yt-dlp`）。
+3. **网页长文清洗（可选外部技能）**：
    - 网页长文清洗：`npx skills add https://github.com/jimliu/baoyu-skills --skill baoyu-url-to-markdown -y`
 
 ---

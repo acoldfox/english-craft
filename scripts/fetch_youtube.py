@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
 YouTube Channel & Video Extractor for EnglishCraft
-Leverages yt-dlp to fetch YouTube video lists from channels, handles, playlists, or search queries.
-Provides video metadata (title, duration, URL, cover image) and supports subtitle extraction
-for direct integration into WordTower (词塔) and vocab curation.
+Cross-platform (Windows, macOS, Linux) YouTube extractor leveraging yt-dlp.
+Supports auto-installing yt-dlp, fetching video lists with covers, extracting subtitles,
+and seamlessly exporting to WordTower (词塔) and vocab pipelines.
 """
 
 from __future__ import annotations
@@ -18,33 +18,107 @@ import sys
 from pathlib import Path
 from typing import Any
 
+# Ensure UTF-8 output on Windows console (cmd.exe, PowerShell) to prevent GBK UnicodeEncodeError
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
-def find_ytdlp() -> str:
-    """Find yt-dlp executable path or raise helpful error."""
+
+def get_ytdlp_command(auto_install: bool = True) -> list[str]:
+    """
+    Find yt-dlp executable or Python module command.
+    If not installed and auto_install is True, automatically installs it via pip.
+    Returns a list of command tokens, e.g. ['/path/to/yt-dlp'] or [sys.executable, '-m', 'yt_dlp'].
+    """
+    # 1. Check custom environment variable
     override = os.environ.get("YTDLP_PATH")
     if override and os.path.isfile(override) and os.access(override, os.X_OK):
-        return override
+        return [override]
 
+    # 2. Check system PATH
     found = shutil.which("yt-dlp")
     if found:
-        return found
+        return [found]
 
-    common_paths = [
-        "/opt/homebrew/bin/yt-dlp",
-        "/usr/local/bin/yt-dlp",
-        os.path.expanduser("~/.local/bin/yt-dlp"),
-    ]
+    # 3. Check common platform-specific locations
+    common_paths = []
+    if os.name == "nt":  # Windows
+        local_app_data = os.environ.get("LOCALAPPDATA", "")
+        app_data = os.environ.get("APPDATA", "")
+        user_profile = os.environ.get("USERPROFILE", "")
+        common_paths.extend([
+            os.path.join(local_app_data, "Microsoft", "WinGet", "Links", "yt-dlp.exe"),
+            os.path.join(local_app_data, "Programs", "yt-dlp", "yt-dlp.exe"),
+            os.path.join(user_profile, "scoop", "shims", "yt-dlp.exe"),
+            os.path.join(os.path.dirname(sys.executable), "Scripts", "yt-dlp.exe"),
+            os.path.join(app_data, "Python", "Scripts", "yt-dlp.exe"),
+        ])
+    else:  # macOS / Linux
+        common_paths.extend([
+            "/opt/homebrew/bin/yt-dlp",
+            "/usr/local/bin/yt-dlp",
+            os.path.expanduser("~/.local/bin/yt-dlp"),
+            os.path.join(os.path.dirname(sys.executable), "yt-dlp"),
+        ])
+
     for p in common_paths:
-        if os.path.isfile(p) and os.access(p, os.X_OK):
-            return p
+        if p and os.path.isfile(p) and os.access(p, os.X_OK):
+            return [p]
 
+    # 4. Check if yt_dlp Python module is installed
+    try:
+        res = subprocess.run(
+            [sys.executable, "-m", "yt_dlp", "--version"],
+            capture_output=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        if res.returncode == 0:
+            return [sys.executable, "-m", "yt_dlp"]
+    except Exception:
+        pass
+
+    # 5. Not found - Attempt automatic self-healing installation
+    if auto_install:
+        print("\n🔧 [EnglishCraft] 'yt-dlp' is required but not found.", file=sys.stderr)
+        print("   Attempting automatic installation via pip ...", file=sys.stderr)
+        try:
+            install_cmd = [sys.executable, "-m", "pip", "install", "-U", "yt-dlp"]
+            install_res = subprocess.run(install_cmd, check=False)
+            if install_res.returncode == 0:
+                print("✅ [EnglishCraft] 'yt-dlp' successfully installed!\n", file=sys.stderr)
+                # Re-check via module or PATH
+                found = shutil.which("yt-dlp")
+                if found:
+                    return [found]
+                return [sys.executable, "-m", "yt_dlp"]
+            else:
+                print("⚠️  Automatic pip install exited with non-zero status.", file=sys.stderr)
+        except Exception as exc:
+            print(f"⚠️  Automatic installation failed: {exc}", file=sys.stderr)
+
+    # 6. Failure guidance
     print(
-        "\n❌ [EnglishCraft YouTube] Error: 'yt-dlp' is not installed or not in PATH.\n"
-        "   Please install yt-dlp first:\n"
-        "     - macOS:  brew install yt-dlp\n"
-        "     - Python: pip install -U yt-dlp\n",
+        "\n❌ [EnglishCraft YouTube] Error: 'yt-dlp' is not available.\n"
+        "   Please install yt-dlp using one of the following:\n",
         file=sys.stderr,
     )
+    if os.name == "nt":
+        print("     - Windows (pip):    python -m pip install -U yt-dlp", file=sys.stderr)
+        print("     - Windows (winget): winget install yt-dlp", file=sys.stderr)
+    elif sys.platform == "darwin":
+        print("     - macOS (Homebrew): brew install yt-dlp", file=sys.stderr)
+        print("     - macOS (pip):      pip3 install -U yt-dlp", file=sys.stderr)
+    else:
+        print("     - Linux:            pip install -U yt-dlp", file=sys.stderr)
+    print("", file=sys.stderr)
     sys.exit(1)
 
 
@@ -95,30 +169,38 @@ def fetch_channel_videos(
     proxy: str | None = None,
 ) -> dict[str, Any]:
     """Fetch video entries from a YouTube channel/playlist using yt-dlp."""
-    ytdlp = find_ytdlp()
+    ytdlp_cmd = get_ytdlp_command()
     url = normalize_youtube_target(target)
 
     end = start + limit - 1
-    cmd = [
-        ytdlp,
-        "--flat-playlist",
-        "--no-warnings",
-        "--no-update",
-        "--playlist-start",
-        str(start),
-        "--playlist-end",
-        str(end),
-        "-J",
-        url,
-    ]
+    cmd = (
+        ytdlp_cmd
+        + [
+            "--flat-playlist",
+            "--no-warnings",
+            "--no-update",
+            "--playlist-start",
+            str(start),
+            "--playlist-end",
+            str(end),
+            "-J",
+            url,
+        ]
+    )
 
     if proxy:
         cmd.extend(["--proxy", proxy])
 
     try:
-        res = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        res = subprocess.run(
+            cmd,
+            capture_output=True,
+            encoding="utf-8",
+            errors="replace",
+            check=True,
+        )
     except subprocess.CalledProcessError as exc:
-        err_msg = exc.stderr.strip() or exc.stdout.strip()
+        err_msg = (exc.stderr or "").strip() or (exc.stdout or "").strip()
         print(f"❌ yt-dlp failed to fetch {url}:\n{err_msg}", file=sys.stderr)
         raise RuntimeError(f"Failed to fetch videos from {url}") from exc
 
@@ -180,7 +262,7 @@ def download_subtitles(
     proxy: str | None = None,
 ) -> Path:
     """Download English subtitles for a video and return the .srt path."""
-    ytdlp = find_ytdlp()
+    ytdlp_cmd = get_ytdlp_command()
 
     if video_url_or_id.startswith("http://") or video_url_or_id.startswith("https://"):
         vid_url = video_url_or_id
@@ -194,28 +276,35 @@ def download_subtitles(
     out_folder.mkdir(parents=True, exist_ok=True)
     out_template = str(out_folder / f"{safe_id}.%(ext)s")
 
-    cmd = [
-        ytdlp,
-        "--write-sub",
-        "--write-auto-sub",
-        "--sub-lang",
-        lang,
-        "--sub-format",
-        "srt",
-        "--skip-download",
-        "--no-warnings",
-        "--no-update",
-        "-o",
-        out_template,
-        vid_url,
-    ]
+    cmd = (
+        ytdlp_cmd
+        + [
+            "--write-sub",
+            "--write-auto-sub",
+            "--sub-lang",
+            lang,
+            "--sub-format",
+            "srt",
+            "--skip-download",
+            "--no-warnings",
+            "--no-update",
+            "-o",
+            out_template,
+            vid_url,
+        ]
+    )
 
     if proxy:
         cmd.extend(["--proxy", proxy])
 
-    res = subprocess.run(cmd, capture_output=True, text=True)
+    res = subprocess.run(
+        cmd,
+        capture_output=True,
+        encoding="utf-8",
+        errors="replace",
+    )
     if res.returncode != 0:
-        err = res.stderr.strip() or res.stdout.strip()
+        err = (res.stderr or "").strip() or (res.stdout or "").strip()
         raise RuntimeError(f"Failed to download subtitles: {err}")
 
     srt_candidates = list(out_folder.glob(f"{safe_id}*.srt"))
@@ -294,7 +383,7 @@ def main():
     sub_parser = subparsers.add_parser("subtitles", help="Download subtitles for a YouTube video")
     sub_parser.add_argument("video", help="YouTube video URL or Video ID")
     sub_parser.add_argument("-o", "--output-dir", default="./transcripts", help="Directory to save .srt file")
-    sub_parser.add_argument("--lang", default="en", help="Subtitle language (default: en)")
+    sub_parser.add_argument("--lang", default="en,en-US,en-GB", help="Subtitle language (default: en,en-US,en-GB)")
     sub_parser.add_argument("--proxy", help="HTTP/HTTPS proxy")
     sub_parser.add_argument("--json", action="store_true", help="Output result as JSON")
 
@@ -306,7 +395,6 @@ def main():
     wt_parser.add_argument("--proxy", help="HTTP/HTTPS proxy")
 
     # Support shorthand if no subcommand given: 'fetch_youtube.py @TEDEd'
-    args = None
     if len(sys.argv) > 1 and sys.argv[1] not in ("list", "subtitles", "wordtower", "-h", "--help"):
         # Synthesize 'list' command
         sys.argv.insert(1, "list")
