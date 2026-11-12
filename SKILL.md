@@ -97,13 +97,29 @@ python3 {baseDir}/scripts/fetch_audiobook.py search "The Great Gatsby" --limit 5
 python3 {baseDir}/scripts/fetch_audiobook.py magnet "The Great Gatsby" --index 2 --markdown [-o ./downloads/audiobooks] [--open]
 ```
 
-### 4. 散装文章装订成册 (`{baseDir}/scripts/binder.py`)
+### 4. YouTube 频道视频列表与字幕提取 (`{baseDir}/scripts/fetch_youtube.py`)
+依托 `yt-dlp` 高速提取 YouTube 用户、频道 Handle（如 `@TEDEd`、`@hubermanlab`）或播放列表的完整视频清单（含封面缩略图、时长、视频链接），并支持直接抓取英文字幕或一步导入词塔：
+```bash
+# 获取频道视频列表（默认 10 条，支持 -n/--limit，支持富文本 Markdown 表格带封面）
+python3 {baseDir}/scripts/fetch_youtube.py list @TEDEd -n 5 [--markdown] [--json]
+
+# 便捷简写（直接跟 Handle 或用户名）
+python3 {baseDir}/scripts/fetch_youtube.py @hubermanlab -n 3
+
+# 下载指定视频的英文时间戳字幕（.srt）
+python3 {baseDir}/scripts/fetch_youtube.py subtitles "https://www.youtube.com/watch?v=aDblEBU41nA" -o ./downloads/subtitles
+
+# 一键将指定 YouTube 视频提取字幕并导入词塔生成双语阅读伴读课程
+python3 {baseDir}/scripts/fetch_youtube.py wordtower "https://www.youtube.com/watch?v=aDblEBU41nA" [--title "Pepper History"]
+```
+
+### 5. 散装文章装订成册 (`{baseDir}/scripts/binder.py`)
 将多篇散落的英文 Markdown 或纯文本文件，装订合成一本标准的 EPUB 3 电子书：
 ```bash
 python3 {baseDir}/scripts/binder.py ./articles/ --title "Weekly Tech & Life Digest" -o ./downloads/digest.epub
 ```
 
-### 5. 英文词频与核心词汇提取 (`{baseDir}/scripts/vocab.py`)
+### 6. 英文词频与核心词汇提取 (`{baseDir}/scripts/vocab.py`)
 自动对文章、字幕或整本 EPUB 提取重点学习词汇，内置词典词形还原并自动过滤专有名词与 A1/A2 基础虚词：
 ```bash
 # 提取前 30 个高频重点词汇及上下文例句
@@ -114,13 +130,13 @@ python3 {baseDir}/scripts/vocab.py <path> --top 50 --format csv -o ./downloads/v
 python3 {baseDir}/scripts/vocab.py <path> --top 50 --format markdown -o ./downloads/vocab.md
 ```
 
-### 6. A4 打印与页边注记排版 (`{baseDir}/scripts/print_layout.py`)
+### 7. A4 打印与页边注记排版 (`{baseDir}/scripts/print_layout.py`)
 生成带右侧生词边栏、文中词汇下划线标注、手写留白横线与文末词汇复习清单的 A4 打印排版 HTML（支持在浏览器中 `Cmd+P` 另存为 PDF 或直接打印）：
 ```bash
 python3 {baseDir}/scripts/print_layout.py <path-to-md-or-epub> --title "Article Title" [--max-paragraphs 60] -o ./downloads/reading_sheet.html
 ```
 
-### 7. 导出到词塔 (`{baseDir}/scripts/exporters/wordtower.py`)
+### 8. 导出到词塔 (`{baseDir}/scripts/exporters/wordtower.py`)
 完整实现词塔官方 v0.7.0 的 `Preview ➔ Submit (UUID 幂等键) ➔ Poll Status` 三步闭环（若用户仅要求预览，可附加 `--preview-only`）：
 ```bash
 # 导出 EPUB（若用户仅需特定章节，先调用 wordtower/scripts/epub_select.py inspect & build 裁剪后再导出）
@@ -144,6 +160,10 @@ python3 {baseDir}/scripts/exporters/wordtower.py youtube "<YouTube-URL>" --subti
   - *“古登堡计划搜索 1661 电子书下载”*
   - *“在 AudioBook Bay 搜一下《了不起的盖茨比》的有声书，提取免登录磁力链接”*
   - *“帮我找一下 Stephen Fry 演播的《哈利波特》M4B 有声书磁力链接”*
+- **YouTube 频道检索与字幕直通**：
+  - *“帮我查一下 @TEDEd 最近更新了哪些视频，列出时长和封面”*
+  - *“看下 Huberman Lab 最近的 5 期播客视频列表”*
+  - *“把 @TEDEd 的最新这个视频提取字幕，并一键导入词塔建课”*
 - **装订成册**：
   - *“把我这周收集的 3 篇英文文章装订成一本 EPUB 电子书”*
 - **词汇分析**：
@@ -168,6 +188,7 @@ python3 {baseDir}/scripts/exporters/wordtower.py youtube "<YouTube-URL>" --subti
 - 外刊期刊：[hehonghui/awesome-english-ebooks](https://github.com/hehonghui/awesome-english-ebooks)
 - 公版名著：[Standard Ebooks](https://standardebooks.org/) 与 [Project Gutenberg](https://www.gutenberg.org/)（含 [Gutendex](https://gutendex.com/) 检索支持）
 - 有声读物：[AudioBook Bay](https://audiobookbay.lu/)、[Steellow/abb-get](https://github.com/Steellow/abb-get) 与 [smythp/audiobook_bay_scraper](https://github.com/smythp/audiobook_bay_scraper)
+- 视频提取：[yt-dlp](https://github.com/yt-dlp/yt-dlp)
 - 伴读平台：[词塔 (WordTower)](https://www.wordtower.cn)
 - 转录工具：[baoyu-skills](https://github.com/jimliu/baoyu-skills)
 
