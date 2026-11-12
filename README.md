@@ -32,6 +32,7 @@
 - 🔍 **全源英文语料采集 (Find)**
   - **权威外刊**：直连《经济学人》（The Economist）、《纽约客》（The New Yorker）、《大西洋月刊》（The Atlantic）、《连线》（WIRED）高品质 EPUB，内置自动代理与镜像容灾。
   - **公版经典名著**：优先检索 **Standard Ebooks** 极客精排源，自动 fallback 至 **Project Gutenberg**（古登堡计划），支持书名、作者、数字 ID 与 URL 直下。
+  - **英文有声读物**：支持 **AudioBook Bay (ABB)** 无删减有声书检索（含演播者、M4B/MP3 格式与码率解析），基于 Info Hash 与 Tracker 列表**免登录直接生成磁力链接 (Magnet Link)**。
   - **现代多模态**：支持 YouTube 英文演讲与带时间戳字幕（SRT）采集，支持任意网页外媒长文去噪正文提取。
 - 📚 **散装文章装订成册 (Bind)**
   - 内置 EPUB 3 零依赖打包引擎，将多篇散落的 Markdown / TXT 文章或章节，一键编译成标准的 EPUB 电子书，生成合规目录（TOC），直接推送到 Kindle 或 Apple Books。
@@ -65,10 +66,12 @@ npx skills add https://github.com/acoldfox/english-craft -y
 
 安装完成后，你只需像与助教沟通一样对 AI 提出需求：
 
-#### 📖 1. 查找与下载英文语料
+#### 📖 1. 查找与下载英文语料（外刊 / 名著 / 有声书）
 - *“帮我查一下这周最新一期的《经济学人》，并下载 EPUB。”*
 - *“在 Standard Ebooks 上找一本排版精美的《了不起的盖茨比》。”*
 - *“在古登堡计划搜一下《福尔摩斯探案集》（或直接下载 #1661）。”*
+- *“在 AudioBook Bay 搜一下《了不起的盖茨比》的有声书，帮我提取免登录磁力链接。”*
+- *“找一下 Stephen Fry 演播的《哈利波特》M4B 格式有声书。”*
 - *“帮我下载这个 YouTube 英文演讲和带时间戳的字幕：https://youtube.com/watch?v=xxx”*
 
 #### 📚 2. 散装好文装订成册 (EPUB)
@@ -109,6 +112,7 @@ english-craft/
 ├── scripts/
 │   ├── fetch_magazine.py      # 外刊采集引擎（经济学人/纽约客/大西洋/连线）
 │   ├── fetch_book.py          # 经典名著检索（Standard Ebooks & 古登堡）
+│   ├── fetch_audiobook.py     # 有声书检索与免登录磁力链提取（AudioBook Bay）
 │   ├── binder.py              # 散篇文章装订成册（标准 EPUB 3 打包器）
 │   ├── vocab.py               # 英文词频与重点词汇提炼分析器
 │   ├── print_layout.py        # A4 打印版式与边栏生词排印器
@@ -127,6 +131,7 @@ english-craft/
 - **[awesome-english-ebooks](https://github.com/hehonghui/awesome-english-ebooks)** (by [@hehonghui](https://github.com/hehonghui))：提供外刊期刊数据整理与更新（《经济学人》《纽约客》《大西洋月刊》《连线》）。
 - **[Standard Ebooks](https://standardebooks.org/)**：提供排版精美、校对规范的公有领域英文名著电子书源。
 - **[Project Gutenberg](https://www.gutenberg.org/)** 与 **[Gutendex](https://gutendex.com/)**：提供公有领域名著藏书与检索接口。
+- **[AudioBook Bay](https://audiobookbay.lu/)**、**[Steellow/abb-get](https://github.com/Steellow/abb-get)** 与 **[smythp/audiobook_bay_scraper](https://github.com/smythp/audiobook_bay_scraper)**：提供英文有声书检索与 Info Hash 免登录磁力链构建参考。
 - **[词塔 (WordTower)](https://www.wordtower.cn)**：提供语境精读、生词学习与课程构建支持。
 - **[baoyu-skills](https://github.com/jimliu/baoyu-skills)** (by [@jimliu](https://github.com/jimliu))：提供 YouTube 字幕提取与网页正文清洗组件。
 
