@@ -53,7 +53,15 @@ metadata:
 
 1. **词塔（WordTower）连通性（纯可选插件，仅当用户明确要求“导入词塔”时才触发）**：
    - 词塔仅作为下游伴读课程的导出目标，非核心安装依赖。
-   - **官方 Skill 来源**：词塔官方技能并非公共 GitHub 仓库，而是官方针对注册用户提供的专属插件包。若需使用，用户可登录 [词塔官网 (www.wordtower.cn)](https://www.wordtower.cn) 进入「账户 → Skill 与 Token」下载官方包，解压至 `.agents/skills/wordtower`。
+   - **官方 Skill 开源地址与安装命令**：
+     - GitHub 官方仓库：`https://github.com/word-tower/skills`
+     - 自动安装命令：
+       ```bash
+       npx skills add word-tower/skills -g
+       # 或显式指定 skill 名称：
+       npx skills add https://github.com/word-tower/skills --skill wordtower -y
+       ```
+     - 用户亦可在 [词塔官网 (www.wordtower.cn)](https://www.wordtower.cn) 进入「账户 → Skill 与 Token」下载官方 ZIP 包解压至 `.agents/skills/wordtower`。
    - 检查 `WORDTOWER_API_KEY` 是否已配置（格式以 `wtk-` 开头）。若未配置或未安装，其他 7 大语料与排版功能完全不受影响。
 2. **YouTube 提取与字幕依赖（跨平台全自动自愈）**：
    - 模块 `{baseDir}/scripts/fetch_youtube.py` 原生支持 Windows、macOS 与 Linux。
@@ -200,7 +208,7 @@ python3 {baseDir}/scripts/exporters/wordtower.py youtube "<YouTube-URL>" --subti
 - 公版名著：[Standard Ebooks](https://standardebooks.org/) 与 [Project Gutenberg](https://www.gutenberg.org/)（含 [Gutendex](https://gutendex.com/) 检索支持）
 - 有声读物：[AudioBook Bay](https://audiobookbay.lu/)、[Steellow/abb-get](https://github.com/Steellow/abb-get) 与 [smythp/audiobook_bay_scraper](https://github.com/smythp/audiobook_bay_scraper)
 - 视频提取：[yt-dlp](https://github.com/yt-dlp/yt-dlp)
-- 伴读平台：[词塔 (WordTower)](https://www.wordtower.cn)
+- 伴读平台与官方技能：[词塔 (WordTower)](https://www.wordtower.cn) 与 [word-tower/skills](https://github.com/word-tower/skills)
 - 转录工具：[baoyu-skills](https://github.com/jimliu/baoyu-skills)
 
 
