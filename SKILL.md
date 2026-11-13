@@ -1,6 +1,6 @@
 ---
 name: english-craft
-description: 英文语料工坊（EnglishCraft）。一站式英文原版语料策展、散装文章装订成册、词汇提炼分析、A4打印排版，并支持一键导入词塔（WordTower）生成双语伴读课程。支持《经济学人》等外刊、Standard Ebooks 与古登堡名著、AudioBook Bay 有声书、YouTube 英文字幕、外媒网页去噪长文。
+description: 英文语料工坊（EnglishCraft）。一站式英文原版语料策展、散装文章装订成册、词汇提炼分析、A4打印排版，并支持一键导入词塔（WordTower）生成双语伴读课程。支持《经济学人》等外刊、Standard Ebooks 与古登堡名著、AudioBook Bay 有声书、英文播客与免本地转录文稿提取、YouTube 英文字幕、外媒网页去噪长文。
 metadata:
   version: "2.1.0"
   homepage: "https://github.com/acoldfox/english-craft"
@@ -22,6 +22,7 @@ metadata:
 │   • 国际权威外刊：《经济学人》《纽约客》《大西洋月刊》《连线》     │
 │   • 公版原著图书：Standard Ebooks 极客精排源、Project Gutenberg │
 │   • 英文有声读物：AudioBook Bay 有声书检索与免登录 Magnet 提取 │
+│   • 英文精品播客：iTunes 播客检索、单集清单与免本地转录文稿提取 │
 │   • 现代多模态：YouTube 英文原声与时间戳字幕、外媒去噪长文   │
 └──────────────────────────────┬──────────────────────────────┘
                                │
@@ -129,13 +130,30 @@ python3 {baseDir}/scripts/fetch_youtube.py subtitles "https://www.youtube.com/wa
 python3 {baseDir}/scripts/fetch_youtube.py wordtower "https://www.youtube.com/watch?v=aDblEBU41nA" [--title "Pepper History"]
 ```
 
-### 5. 散装文章装订成册 (`{baseDir}/scripts/binder.py`)
+### 5. 英文播客检索与免本地转录文稿提取 (`{baseDir}/scripts/fetch_podcast.py`)
+基于 Apple iTunes 公开接口（免 Key）实现英文播客与单集检索，并通过“RSS `<podcast:transcript>` ➔ YouTube 同源时间轴字幕匹配 ➔ Show Notes 兜底”三级链路**零本地算力（无需本地 Whisper）**获取精读逐字稿：
+```bash
+# 搜索播客节目（支持 Markdown 带封面展示）
+python3 {baseDir}/scripts/fetch_podcast.py search "6 Minute English" -n 5 --markdown
+
+# 查看指定播客最新单集列表（支持播客名或 Apple ID）
+python3 {baseDir}/scripts/fetch_podcast.py episodes "Huberman Lab" -n 5 --markdown
+
+# 提取第 1 期单集文稿（免本地转录，自动生成 .srt 字幕与分段 .md 精读稿）
+python3 {baseDir}/scripts/fetch_podcast.py transcript "6 Minute English" -i 1 -o ./downloads/podcasts
+
+# 按单集标题关键词提取文稿并一键导入词塔（WordTower）
+python3 {baseDir}/scripts/fetch_podcast.py transcript "Huberman Lab" -e "Cold & Heat" -o ./downloads/podcasts
+python3 {baseDir}/scripts/fetch_podcast.py wordtower "6 Minute English" -i 1
+```
+
+### 6. 散装文章装订成册 (`{baseDir}/scripts/binder.py`)
 将多篇散落的英文 Markdown 或纯文本文件，装订合成一本标准的 EPUB 3 电子书：
 ```bash
 python3 {baseDir}/scripts/binder.py ./articles/ --title "Weekly Tech & Life Digest" -o ./downloads/digest.epub
 ```
 
-### 6. 英文词频与核心词汇提取 (`{baseDir}/scripts/vocab.py`)
+### 7. 英文词频与核心词汇提取 (`{baseDir}/scripts/vocab.py`)
 自动对文章、字幕或整本 EPUB 提取重点学习词汇，内置词典词形还原并自动过滤专有名词与 A1/A2 基础虚词：
 ```bash
 # 提取前 30 个高频重点词汇及上下文例句
@@ -146,13 +164,13 @@ python3 {baseDir}/scripts/vocab.py <path> --top 50 --format csv -o ./downloads/v
 python3 {baseDir}/scripts/vocab.py <path> --top 50 --format markdown -o ./downloads/vocab.md
 ```
 
-### 7. A4 打印与页边注记排版 (`{baseDir}/scripts/print_layout.py`)
+### 8. A4 打印与页边注记排版 (`{baseDir}/scripts/print_layout.py`)
 生成带右侧生词边栏、文中词汇下划线标注、手写留白横线与文末词汇复习清单的 A4 打印排版 HTML（支持在浏览器中 `Cmd+P` 另存为 PDF 或直接打印）：
 ```bash
 python3 {baseDir}/scripts/print_layout.py <path-to-md-or-epub> --title "Article Title" [--max-paragraphs 60] -o ./downloads/reading_sheet.html
 ```
 
-### 8. 导出到词塔 (`{baseDir}/scripts/exporters/wordtower.py`)
+### 9. 导出到词塔 (`{baseDir}/scripts/exporters/wordtower.py`)
 完整实现词塔官方 v0.7.0 的 `Preview ➔ Submit (UUID 幂等键) ➔ Poll Status` 三步闭环（若用户仅要求预览，可附加 `--preview-only`）：
 ```bash
 # 导出 EPUB（若用户仅需特定章节，先调用 wordtower/scripts/epub_select.py inspect & build 裁剪后再导出）
@@ -179,6 +197,10 @@ python3 {baseDir}/scripts/exporters/wordtower.py youtube "<YouTube-URL>" --subti
   - *“古登堡计划搜索 1661 电子书下载”*
   - *“在 AudioBook Bay 搜一下《了不起的盖茨比》的有声书，提取免登录磁力链接”*
   - *“帮我找一下 Stephen Fry 演播的《哈利波特》M4B 有声书磁力链接”*
+- **英文播客检索与免本地转录**：
+  - *“帮我查一下 BBC 6 Minute English 最近更新的 5 期播客”*
+  - *“提取 Huberman Lab 最新一期播客的英文逐字稿，并提炼 30 个核心生词”*
+  - *“把 6 Minute English 最新一期的字幕文本做成 A4 听力精读纸，或者导入词塔”*
 - **YouTube 频道检索与字幕直通**：
   - *“帮我查一下 @TEDEd 最近更新了哪些视频，列出时长和封面”*
   - *“看下 Huberman Lab 最近的 5 期播客视频列表”*
