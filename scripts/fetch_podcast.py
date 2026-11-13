@@ -603,17 +603,16 @@ def main():
     tr_p.add_argument("--proxy", help="HTTP/HTTPS proxy for yt-dlp")
     tr_p.add_argument("--json", action="store_true", help="Output JSON")
 
-    # wordtower
-    wt_p = subparsers.add_parser("wordtower", help="Extract transcript and import episode into WordTower")
-    wt_p.add_argument("podcast", help="Podcast name or iTunes collection ID")
-    wt_p.add_argument("-i", "--index", type=int, default=1, help="Episode index (default: 1)")
-    wt_p.add_argument("-e", "--episode", help="Match episode title by keyword")
-    wt_p.add_argument("-t", "--title", help="Custom WordTower course title")
-    wt_p.add_argument("--preview-only", action="store_true", help="Preview only without submitting")
-    wt_p.add_argument("--proxy", help="HTTP/HTTPS proxy for yt-dlp")
+    if len(sys.argv) > 1 and sys.argv[1] == "wordtower":
+        print(
+            "❌ WordTower does not support direct podcast audio/RSS import.\n"
+            "   Use 'transcript' to extract the .md / .srt first, then export via exporters/wordtower.py (youtube or text) if needed.",
+            file=sys.stderr,
+        )
+        sys.exit(2)
 
     # Default subcommand to 'episodes' if omitted
-    if len(sys.argv) > 1 and sys.argv[1] not in ("search", "episodes", "transcript", "wordtower", "-h", "--help"):
+    if len(sys.argv) > 1 and sys.argv[1] not in ("search", "episodes", "transcript", "-h", "--help"):
         sys.argv.insert(1, "episodes")
 
     args = parser.parse_args()
@@ -650,51 +649,13 @@ def main():
             else:
                 print(f"\n✅ Episode: {res['episode_title']}")
                 print(f"📡 Source Tier: {res['source_tier']}")
+                if res.get("audio_url"):
+                    print(f"🎧 Audio MP3: {res['audio_url']}")
                 if res.get("youtube_url"):
                     print(f"📺 YouTube Match: {res['youtube_url']}")
                 if res.get("srt_path"):
                     print(f"⏱️  SRT Subtitles: {res['srt_path']}")
                 print(f"📄 Markdown Transcript: {res['markdown_path']}\n")
-
-        elif args.subcommand == "wordtower":
-            res = extract_episode_transcript(
-                args.podcast,
-                index=args.index,
-                episode_keyword=args.episode,
-                output_dir="./transcripts",
-                proxy=args.proxy,
-            )
-            exporter_script = SCRIPTS_DIR / "exporters" / "wordtower.py"
-            if not exporter_script.is_file():
-                print(f"❌ exporters/wordtower.py not found at {exporter_script}", file=sys.stderr)
-                sys.exit(1)
-
-            course_title = args.title or f"{res['podcast_name']}: {res['episode_title']}"
-            if res.get("srt_path") and res.get("youtube_url"):
-                cmd = [
-                    sys.executable,
-                    str(exporter_script),
-                    "youtube",
-                    res["youtube_url"],
-                    "--subtitles",
-                    res["srt_path"],
-                    "--title",
-                    course_title,
-                ]
-            else:
-                cmd = [
-                    sys.executable,
-                    str(exporter_script),
-                    "text",
-                    res["markdown_path"],
-                    "--title",
-                    course_title,
-                ]
-            if args.preview_only:
-                cmd.append("--preview-only")
-
-            print("🗼 Launching WordTower import pipeline...")
-            subprocess.run(cmd, check=True)
         else:
             parser.print_help()
     except Exception as exc:

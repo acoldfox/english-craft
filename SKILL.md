@@ -142,10 +142,16 @@ python3 {baseDir}/scripts/fetch_podcast.py episodes "Huberman Lab" -n 5 --markdo
 # 提取第 1 期单集文稿（免本地转录，自动生成 .srt 字幕与分段 .md 精读稿）
 python3 {baseDir}/scripts/fetch_podcast.py transcript "6 Minute English" -i 1 -o ./downloads/podcasts
 
-# 按单集标题关键词提取文稿并一键导入词塔（WordTower）
+# 按单集标题关键词提取文稿
 python3 {baseDir}/scripts/fetch_podcast.py transcript "Huberman Lab" -e "Cold & Heat" -o ./downloads/podcasts
-python3 {baseDir}/scripts/fetch_podcast.py wordtower "6 Minute English" -i 1
 ```
+
+> [!IMPORTANT]
+> **播客导入词塔（WordTower）的能力边界：**
+> 词塔官方 Skill（`v0.7.0`）仅支持导入 **纯文本、EPUB 和 YouTube 视频**，**不支持直接上传 MP3 播客音频或绑定播客 RSS 流**。
+> 若用户明确要求将某期播客“导入词塔”，Agent **必须先如实告知这一限制并等待用户二选一确认**，绝不静默降级：
+> 1. 若提取结果包含官方同源 YouTube 链接（`youtube_url`）：告知用户“词塔不支持直接导入 MP3 播客，但已匹配到官方同源 YouTube 视频版”，经确认后调用 `exporters/wordtower.py youtube` 按 **YouTube 视频课程** 导入；
+> 2. 若无同源 YouTube 视频：告知用户“仅可将提取出的 `.md` 文字逐字稿作为**无音频的纯文本阅读课**导入”，经确认后再调用 `exporters/wordtower.py text`。
 
 ### 6. 散装文章装订成册 (`{baseDir}/scripts/binder.py`)
 将多篇散落的英文 Markdown 或纯文本文件，装订合成一本标准的 EPUB 3 电子书：
@@ -200,7 +206,7 @@ python3 {baseDir}/scripts/exporters/wordtower.py youtube "<YouTube-URL>" --subti
 - **英文播客检索与免本地转录**：
   - *“帮我查一下 BBC 6 Minute English 最近更新的 5 期播客”*
   - *“提取 Huberman Lab 最新一期播客的英文逐字稿，并提炼 30 个核心生词”*
-  - *“把 6 Minute English 最新一期的字幕文本做成 A4 听力精读纸，或者导入词塔”*
+  - *“把 6 Minute English 最新一期的文稿做成 A4 听力精读纸，配合 MP3 泛听精读”*
 - **YouTube 频道检索与字幕直通**：
   - *“帮我查一下 @TEDEd 最近更新了哪些视频，列出时长和封面”*
   - *“看下 Huberman Lab 最近的 5 期播客视频列表”*

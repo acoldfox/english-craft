@@ -45,7 +45,7 @@
   - 生成专为打印设计的 A4 HTML 页面：**左侧正文 + 右侧边栏生词与手写批注线 + 文末生词复习打卡清单**。
   - 浏览器按 `Cmd + P` / `Ctrl + P` 即可一键输出高颜值 A4 打印纸或保存为 PDF。
 - 🗼 **生态对接：词塔导出适配 (Export to WordTower)**
-  - 采集或装订的任意语料，均可一键推送到 [词塔（WordTower）](https://www.wordtower.cn) 生成双语伴读课程，保留原视频时间轴与逐句点读功能。
+  - 支持将文本、EPUB 与 YouTube 视频（含带时间戳字幕）一键推送到 [词塔（WordTower）](https://www.wordtower.cn) 生成双语伴读课程（暂不支持直接上传有声书或 MP3 播客音频；播客可导出其纯文字稿或选择官方同源 YouTube 视频版导入）。
 
 ---
 
@@ -89,7 +89,7 @@ npx skills add https://github.com/acoldfox/english-craft -y
 - *“生成打印排版，文末要带打卡复习勾选框清单。”*
 
 #### 🗼 5. 词塔（WordTower）专属双语伴读与互动课程
-EnglishCraft 深度集成了 [词塔（WordTower）](https://www.wordtower.cn)，采集或装订的语料均可一键转为具备句子点读、生词联想与视频同步播放的精读课：
+EnglishCraft 深度集成了 [词塔（WordTower）](https://www.wordtower.cn)，支持将文本、EPUB 与 YouTube 视频一键转为具备句子点读、生词联想与视频同步播放的精读课（注：词塔暂不支持直接上传有声书或 MP3 播客音频）：
 - **YouTube 视频原声伴读**：
   - *“把这个 TED 英文演讲导入词塔，保留播放器与原声时间轴做成精读课程：https://youtube.com/watch?v=xxx”*
   - *“帮我把这个油管科技博主的视频和字幕提取出来，一键同步到词塔跟读打卡。”*
