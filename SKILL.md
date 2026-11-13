@@ -45,11 +45,16 @@ metadata:
 
 ## 🛠️ 第一步：前置环境与依赖检测
 
-在执行相关任务时，Agent 根据用户意图自检依赖：
+> [!NOTE]
+> **关于 Agent 自动安装与审查机制（如 WorkBuddy / Codex）：**
+> `english-craft` 是一个**完全自包含的纯 Python 原生语料工坊**。核心功能（外刊精选、公版原著、有声书检索、YouTube 视频列表与字幕提取、散篇装订、词频提炼、A4 排版）**均 100% 零外部依赖、开箱即用，安装阶段切勿将词塔作为硬性阻断依赖**。
 
-1. **词塔连通性（可选，仅当用户要求导入词塔时才触发）**：
-   - 检查 `WORDTOWER_API_KEY`（或 `WORDS_API_KEY`）是否已配置。
-   - 若用户要求导词塔但未配置：引导用户在 [词塔网页端](https://www.wordtower.cn) 创建 Token（格式以 `wtk-` 开头），并协助配置连通。
+在执行相关任务时，Agent 根据用户意图按需自检：
+
+1. **词塔（WordTower）连通性（纯可选插件，仅当用户明确要求“导入词塔”时才触发）**：
+   - 词塔仅作为下游伴读课程的导出目标，非核心安装依赖。
+   - **官方 Skill 来源**：词塔官方技能并非公共 GitHub 仓库，而是官方针对注册用户提供的专属插件包。若需使用，用户可登录 [词塔官网 (www.wordtower.cn)](https://www.wordtower.cn) 进入「账户 → Skill 与 Token」下载官方包，解压至 `.agents/skills/wordtower`。
+   - 检查 `WORDTOWER_API_KEY` 是否已配置（格式以 `wtk-` 开头）。若未配置或未安装，其他 7 大语料与排版功能完全不受影响。
 2. **YouTube 提取与字幕依赖（跨平台全自动自愈）**：
    - 模块 `{baseDir}/scripts/fetch_youtube.py` 原生支持 Windows、macOS 与 Linux。
    - 当需要获取 YouTube 视频列表或下载时间戳字幕时，若系统尚未安装 `yt-dlp`，脚本内置**自动自愈机制**（自动触发 `python -m pip install -U yt-dlp` 补齐）。
@@ -200,7 +205,7 @@ python3 {baseDir}/scripts/exporters/wordtower.py youtube "<YouTube-URL>" --subti
 
 
 
-### YouTube 同步字幕导入约束
+### YouTube 同步字幕导入词塔时的执行约束（仅在用户要求导出到词塔时适用，非安装期要求）
 
 - 视频课程必须使用 `wordtower.py youtube URL --subtitles FILE`，字幕只接受带真实起止时间的 SRT/VTT 或官方 timed JSON。不得把字幕转 Markdown 后用 `text` 导入，也不得在字幕获取失败时降级成纯文本建课。
 - 正文只含字幕，不插入视频标题、简介、总结或翻译；这些内容会破坏字幕与正文的对应关系。标题通过 `--title` 指定。

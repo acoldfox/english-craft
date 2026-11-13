@@ -33,7 +33,8 @@ def find_wordtower_request_script():
         os.path.abspath(os.path.join(os.getcwd(), ".agents/skills/wordtower/scripts/request.py")),
     ]
     for root in ("~/.agents/skills", "~/.codex/skills", "~/.claude/skills",
-                 "~/.gemini/config/skills", "~/.gemini/antigravity/skills"):
+                 "~/.gemini/config/skills", "~/.gemini/antigravity/skills",
+                 "~/.workbuddy/skills", ".workbuddy/skills"):
         candidates.append(os.path.expanduser(root + "/wordtower/scripts/request.py"))
     for candidate in candidates:
         if os.path.isfile(candidate):
@@ -179,16 +180,24 @@ def submit_and_poll(script_path, preview_resp, submit_api, env, preview_only=Fal
     print(f"\nℹ️  Job {job_id} is still processing on WordTower. You can check its status later with job_id: {job_id}")
 
 
+def get_required_request_script():
+    """Ensure WordTower request script is located with clear user-friendly instructions."""
+    script_path = find_wordtower_request_script()
+    if not script_path:
+        print("\n⚠️  [WordTower Exporter] Could not locate WordTower official skill (scripts/request.py).", file=sys.stderr)
+        print("   WordTower export is an optional downstream integration.", file=sys.stderr)
+        print("   To enable it, download the official skill package from https://www.wordtower.cn (Account -> Skill & Token)", file=sys.stderr)
+        print("   and place it in .agents/skills/wordtower (or set WORDTOWER_REQUEST_SCRIPT=/path/to/request.py).\n", file=sys.stderr)
+        sys.exit(1)
+    return script_path
+
+
 def export_epub(epub_path, title=None, preview_only=False):
     env = prepare_env()
     if not env:
         sys.exit(1)
 
-    script_path = find_wordtower_request_script()
-    if not script_path:
-        print("Error: Could not locate WordTower official skill (scripts/request.py).", file=sys.stderr)
-        print("Please ensure 'wordtower' skill is installed in .agents/skills/wordtower.", file=sys.stderr)
-        sys.exit(1)
+    script_path = get_required_request_script()
 
     if not os.path.exists(epub_path):
         print(f"Error: EPUB file not found: {epub_path}", file=sys.stderr)
@@ -211,10 +220,7 @@ def export_text(text_path, title=None, preview_only=False):
     if not env:
         sys.exit(1)
 
-    script_path = find_wordtower_request_script()
-    if not script_path:
-        print("Error: Could not locate a current WordTower official skill. Install/update it or set WORDTOWER_REQUEST_SCRIPT to its scripts/request.py.", file=sys.stderr)
-        sys.exit(1)
+    script_path = get_required_request_script()
 
     if not os.path.exists(text_path):
         print(f"Error: Text file not found: {text_path}", file=sys.stderr)
@@ -256,10 +262,7 @@ def export_youtube(youtube_url, subtitles_path, title=None, preview_only=False):
     if not env:
         sys.exit(1)
 
-    script_path = find_wordtower_request_script()
-    if not script_path:
-        print("Error: Could not locate a current WordTower official skill. Install/update it or set WORDTOWER_REQUEST_SCRIPT to its scripts/request.py.", file=sys.stderr)
-        sys.exit(1)
+    script_path = get_required_request_script()
 
     if not os.path.exists(subtitles_path):
         print(f"Error: Subtitles file not found: {subtitles_path}", file=sys.stderr)
